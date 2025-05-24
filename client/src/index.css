@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 20 14.3% 4.1%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14.3% 4.1%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  --primary: 221 81% 57%; /* #3554D1 */
+  --primary-foreground: 211 100% 99%;
+  --secondary: 201 100% 50%; /* #00A3FF */
+  --secondary-foreground: 0 0% 100%;
+  --accent: 51 100% 50%; /* #FFD700 */
+  --accent-foreground: 0 0% 0%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --success: 160 100% 39%; /* #00C48C */
+  --success-foreground: 0 0% 100%;
+  --danger: 0 100% 66%; /* #FF5252 */
+  --danger-foreground: 0 0% 100%;
+  --ring: 20 14.3% 4.1%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 221 81% 57%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 201 100% 50%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 51 100% 50%;
+  --accent-foreground: 0 0% 0%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --success: 160 100% 39%;
+  --success-foreground: 0 0% 100%;
+  --danger: 0 100% 66%;
+  --danger-foreground: 0 0% 100%;
+  --ring: 221 81% 57%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom styles for the investment platform */
+.custom-gradient {
+  background: linear-gradient(135deg, #3554D1 0%, #00A3FF 100%);
+}
+
+.testimonial-gradient {
+  background: linear-gradient(135deg, rgba(53, 84, 209, 0.05) 0%, rgba(0, 163, 255, 0.05) 100%);
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.slide-indicator.active {
+  width: 2rem;
+  background-color: #3554D1;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Progress bars animation */
+.progress-bar {
+  width: 0%;
+  transition: width 1.5s ease-in-out;
+}
+
+/* Font settings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}

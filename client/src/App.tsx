@@ -2,20 +2,23 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
-import { Route, Switch, Router } from "wouter";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { Route, Switch } from "wouter";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
+// Pages
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
 import AdminPanel from "@/pages/AdminPanel";
+import NotFound from "@/pages/not-found";
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <TooltipProvider>
             <Switch>
@@ -24,11 +27,12 @@ export default function App() {
               <Route path="/register" component={Register} />
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/admin" component={AdminPanel} />
+              <Route component={NotFound} />
             </Switch>
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }

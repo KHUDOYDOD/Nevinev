@@ -45,7 +45,14 @@ export default function Admin() {
   }, [isAuthenticated, user, navigate]);
 
   // Запрос статистики
-  const { data: statsData } = useQuery({
+  const { data: statsData = {
+    totalUsers: 0,
+    totalInvested: 0,
+    totalPaid: 0,
+    newUsers24h: 0,
+    newDeposits24h: 0,
+    newWithdrawals24h: 0
+  } } = useQuery({
     queryKey: ["/api/statistics"],
     enabled: isAuthenticated && !!user?.isAdmin,
   });
@@ -134,7 +141,7 @@ export default function Admin() {
       <AdminSidebar />
       <div className="flex-1 md:ml-0 p-4 md:p-8 overflow-y-auto pt-16 md:pt-8">
         <Switch>
-          <Route path="/admin" exact>
+          <Route path="/admin">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

@@ -17,13 +17,19 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
+export const insertUserSchema = createInsertSchema(users).extend({
+  balance: z.number().default(0),
+}).pick({
   username: true,
   password: true,
   email: true,
   fullName: true,
   language: true,
   referrerId: true,
+  role: true,
+  referralCode: true,
+  balance: true,
+  createdAt: true,
 });
 
 // Tariffs table
@@ -62,6 +68,7 @@ export const insertDepositSchema = createInsertSchema(deposits).pick({
   tariffId: true,
   amount: true,
   dailyProfit: true,
+  status: true,
 });
 
 // Transactions table

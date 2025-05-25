@@ -1,12 +1,12 @@
+import { users } from "@shared/schema";
 import { 
-  users, 
   type User, 
   type InsertUser, 
   type Tariff, 
   type Deposit, 
   type Transaction,
   type Content
-} from "@shared/schema";
+} from "@shared/models";
 
 interface Referral {
   id: number;

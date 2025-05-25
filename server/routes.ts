@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { nanoid } from "nanoid";
+import { User } from "@shared/models";
 
 // JWT Secret key - in production would be an environment variable
 const JWT_SECRET = process.env.JWT_SECRET || "tradepo-secret-key";
@@ -37,7 +38,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized - Invalid token" });
       }
 
-      req.user = user;
+      // Cast user to our defined User type to ensure TypeScript compatibility
+      req.user = user as User;
       next();
     } catch (error) {
       return res.status(401).json({ message: "Unauthorized - Invalid token" });
@@ -64,11 +66,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { username, email, password, fullName, language, referralCode } = req.body;
       
       // Check if username or email already exists
+      // Check if username already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already exists" });
       }
       
+      // Check if email already exists
       const existingEmail = await storage.getUserByEmail(email);
       if (existingEmail) {
         return res.status(400).json({ message: "Email already exists" });
@@ -119,8 +123,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid email or password" });
       }
       
-      // Verify password
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      // Verify password - ensure user has password property
+      const userPassword = (user as any).password || '';
+      const isPasswordValid = await bcrypt.compare(password, userPassword);
       if (!isPasswordValid) {
         return res.status(401).json({ message: "Invalid email or password" });
       }

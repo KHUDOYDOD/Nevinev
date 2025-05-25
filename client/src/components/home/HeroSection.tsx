@@ -222,7 +222,7 @@ export default function HeroSection() {
             >
               Ультрасовременная инвестиционная платформа с фиксированной ставкой до&nbsp;
               <span className="relative inline-flex items-center">
-                <span className="font-bold">10%</span>
+                <span className="font-bold text-2xl bg-gradient-to-r from-green-300 to-emerald-400 bg-clip-text text-transparent drop-shadow-lg">10%</span>
                 <motion.span 
                   className="absolute -top-1 -right-2 w-2 h-2 bg-green-400 rounded-full"
                   animate={{ 

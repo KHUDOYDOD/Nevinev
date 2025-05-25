@@ -1,80 +1,119 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number, currency = "USD"): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
+// Format currency with the given locale
+export function formatCurrency(amount: number, locale: string = 'ru-RU', currency: string = 'USD') {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
 }
 
-export function getInitials(name: string): string {
-  if (!name) return "U";
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-}
-
-export function calculateProfit(
-  amount: number,
-  rate: number,
-  days: number
-): {
+// Calculate investment profit
+export function calculateProfit(amount: number, rate: number, days: number): {
   dailyProfit: number;
   totalProfit: number;
-  finalAmount: number;
+  totalAmount: number;
 } {
   const dailyProfit = amount * (rate / 100);
   const totalProfit = dailyProfit * days;
-  const finalAmount = amount + totalProfit;
+  const totalAmount = amount + totalProfit;
 
   return {
     dailyProfit,
     totalProfit,
-    finalAmount,
+    totalAmount,
   };
 }
 
-// Generate random time string for activity items
-export function getRandomTimeAgo(): string {
-  const minutes = Math.floor(Math.random() * 60) + 1;
-  return `${minutes} минут назад`;
-}
-
-// Safely parse JSON with a fallback
-export function safeJsonParse<T>(value: string, fallback: T): T {
-  try {
-    return JSON.parse(value) as T;
-  } catch (error) {
-    return fallback;
+// Generate random referral code
+export function generateReferralCode(length: number = 8): string {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  const charactersLength = characters.length;
+  
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
+  
+  return result;
 }
 
-// For countdown animation
-export function animateValue(
-  obj: HTMLElement,
-  start: number,
-  end: number,
-  duration: number
-): void {
-  let startTimestamp: number | null = null;
-  const step = (timestamp: number) => {
-    if (!startTimestamp) startTimestamp = timestamp;
-    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-    const currentValue = Math.floor(progress * (end - start) + start);
-    obj.textContent = currentValue.toLocaleString();
-    
-    if (progress < 1) {
-      window.requestAnimationFrame(step);
-    }
+// Format date with the given locale
+export function formatDate(date: Date | string, locale: string = 'ru-RU'): string {
+  if (typeof date === 'string') {
+    date = new Date(date);
+  }
+  
+  return new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
+// Get transaction type label
+export function getTransactionTypeLabel(type: string, t: any): string {
+  const types: Record<string, string> = {
+    'deposit': t('common.deposit'),
+    'withdraw': t('common.withdraw'),
+    'referral_bonus': t('common.referralBonus'),
+    'profit': t('common.profit'),
   };
-  window.requestAnimationFrame(step);
+  
+  return types[type] || type;
+}
+
+// Get transaction status badge color
+export function getStatusColor(status: string): string {
+  const colors: Record<string, string> = {
+    'active': 'bg-green-100 text-green-800',
+    'pending': 'bg-yellow-100 text-yellow-800',
+    'completed': 'bg-green-100 text-green-800',
+    'rejected': 'bg-red-100 text-red-800',
+  };
+  
+  return colors[status] || 'bg-gray-100 text-gray-800';
+}
+
+// Format percentage
+export function formatPercentage(percentage: number): string {
+  return `${percentage.toFixed(1)}%`;
+}
+
+// Get initials from name
+export function getInitials(name: string): string {
+  if (!name) return '';
+  
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
+// Validate email
+export function isValidEmail(email: string): boolean {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+}
+
+// Get language name
+export function getLanguageName(code: string): string {
+  const languages: Record<string, string> = {
+    'ru': 'Русский',
+    'en': 'English',
+    'tj': 'Тоҷикӣ',
+    'kz': 'Қазақша',
+    'uz': 'O\'zbekcha',
+  };
+  
+  return languages[code] || code;
 }

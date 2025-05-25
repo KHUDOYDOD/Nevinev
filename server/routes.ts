@@ -1,580 +1,826 @@
-import express, { type Express } from "express";
+import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { 
-  insertUserSchema,
-  insertLanguagePreferenceSchema,
-  insertDepositSchema,
-  insertTransactionSchema,
-  insertTestimonialSchema,
-  insertTariffSchema,
-  insertSiteContentSchema
-} from "@shared/schema";
-import { ZodError } from "zod";
-import { fromZodError } from "zod-validation-error";
-import session from "express-session";
-import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
-import MemoryStore from "memorystore";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { nanoid } from "nanoid";
 
-const SessionStore = MemoryStore(session);
+// JWT Secret key - in production would be an environment variable
+const JWT_SECRET = process.env.JWT_SECRET || "tradepo-secret-key";
+
+// Token expiration time
+const TOKEN_EXPIRY = '7d';
+
+// Helper function to generate referral code
+function generateReferralCode(length = 8) {
+  return nanoid(length).toUpperCase();
+}
+
+// Helper function to calculate daily profit
+function calculateDailyProfit(amount: number, dailyRate: number) {
+  return amount * (dailyRate / 100);
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Set up session middleware
-  app.use(
-    session({
-      secret: "tradepo-secret-key",
-      resave: false,
-      saveUninitialized: false,
-      cookie: { secure: process.env.NODE_ENV === "production", maxAge: 24 * 60 * 60 * 1000 },
-      store: new SessionStore({
-        checkPeriod: 86400000 // 24 hours
-      })
-    })
-  );
-
-  // Set up passport for authentication
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  // Configure passport local strategy
-  passport.use(
-    new LocalStrategy(async (username, password, done) => {
-      try {
-        const user = await storage.getUserByUsername(username);
-        
-        if (!user) {
-          return done(null, false, { message: "Incorrect username or password" });
-        }
-        
-        if (user.password !== password) {
-          return done(null, false, { message: "Incorrect username or password" });
-        }
-        
-        return done(null, user);
-      } catch (error) {
-        return done(error);
-      }
-    })
-  );
-
-  passport.serializeUser((user: any, done) => {
-    done(null, user.id);
-  });
-
-  passport.deserializeUser(async (id: number, done) => {
+  // Authentication middleware
+  const authenticateUser = async (req: any, res: any, next: any) => {
     try {
-      const user = await storage.getUserById(id);
-      done(null, user || null);
+      const token = req.cookies.token;
+      if (!token) {
+        return res.status(401).json({ message: "Unauthorized - No token provided" });
+      }
+
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      const user = await storage.getUser(decoded.userId);
+
+      if (!user) {
+        return res.status(401).json({ message: "Unauthorized - Invalid token" });
+      }
+
+      req.user = user;
+      next();
     } catch (error) {
-      done(error);
+      return res.status(401).json({ message: "Unauthorized - Invalid token" });
     }
-  });
+  };
 
-  // Error handling middleware for Zod validation errors
-  const handleZodError = (err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (err instanceof ZodError) {
-      const validationError = fromZodError(err);
-      return res.status(400).json({ 
-        error: "Validation error", 
-        details: validationError.message 
+  // Admin middleware
+  const authenticateAdmin = async (req: any, res: any, next: any) => {
+    try {
+      await authenticateUser(req, res, () => {
+        if (req.user.role !== "admin") {
+          return res.status(403).json({ message: "Forbidden - Admin access required" });
+        }
+        next();
       });
+    } catch (error) {
+      return res.status(403).json({ message: "Forbidden - Admin access required" });
     }
-    next(err);
   };
 
-  app.use(handleZodError);
-
-  // Authentication check middleware
-  const isAuthenticated = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.status(401).json({ error: "Unauthorized" });
-  };
-
-  // Admin check middleware
-  const isAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (req.isAuthenticated() && req.user && (req.user as any).role === "admin") {
-      return next();
-    }
-    res.status(403).json({ error: "Forbidden" });
-  };
-
-  // API routes
-  // Auth routes
+  // ----- AUTH ROUTES -----
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      const { username, email, password, fullName, language, referralCode } = req.body;
       
       // Check if username or email already exists
-      const existingUsername = await storage.getUserByUsername(userData.username);
-      if (existingUsername) {
-        return res.status(400).json({ error: "Username already exists" });
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
       }
       
-      const existingEmail = await storage.getUserByEmail(userData.email);
+      const existingEmail = await storage.getUserByEmail(email);
       if (existingEmail) {
-        return res.status(400).json({ error: "Email already exists" });
+        return res.status(400).json({ message: "Email already exists" });
       }
-
-      // Generate a unique referral code
-      userData.referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-
-      // Check if referrer exists
-      if (req.body.referrerCode) {
-        const referrer = await storage.getUserByReferralCode(req.body.referrerCode);
+      
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      // Generate referral code
+      const newReferralCode = generateReferralCode();
+      
+      // Check if referral code is valid
+      let referrerId = null;
+      if (referralCode) {
+        const referrer = await storage.getUserByReferralCode(referralCode);
         if (referrer) {
-          userData.referrerId = referrer.id;
+          referrerId = referrer.id;
         }
       }
       
-      const newUser = await storage.createUser(userData);
-      
-      // Set default language preference
-      await storage.setLanguagePreference({
-        userId: newUser.id,
-        language: "ru"
+      // Create user
+      const user = await storage.createUser({
+        username,
+        email,
+        password: hashedPassword,
+        fullName: fullName || null,
+        role: "user",
+        balance: 0,
+        language: language || "ru",
+        referralCode: newReferralCode,
+        referrerId: referrerId,
       });
       
-      // Log the user in
-      req.login(newUser, (err) => {
-        if (err) {
-          return res.status(500).json({ error: "Failed to login after registration" });
-        }
-        return res.status(201).json({ 
-          message: "User registered successfully",
-          user: {
-            id: newUser.id,
-            username: newUser.username,
-            email: newUser.email,
-            role: newUser.role,
-            balance: newUser.balance,
-            referralCode: newUser.referralCode
-          }
-        });
-      });
+      res.status(201).json({ message: "User registered successfully" });
     } catch (error) {
-      if (error instanceof ZodError) {
-        const validationError = fromZodError(error);
-        return res.status(400).json({ error: validationError.message });
-      }
-      res.status(500).json({ error: "Failed to register user" });
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "Server error during registration" });
     }
   });
 
-  app.post("/api/auth/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
-      if (err) {
-        return next(err);
-      }
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
       if (!user) {
-        return res.status(400).json({ error: info.message });
+        return res.status(401).json({ message: "Invalid email or password" });
       }
-      req.login(user, (err) => {
-        if (err) {
-          return next(err);
-        }
-        return res.json({ 
-          message: "Login successful",
-          user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            role: user.role,
-            balance: user.balance,
-            referralCode: user.referralCode
-          }
-        });
+      
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      // Generate JWT token
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+      
+      // Set token in cookie
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
-    })(req, res, next);
+      
+      // Return user without password
+      const { password: _, ...userWithoutPassword } = user;
+      res.status(200).json(userWithoutPassword);
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Server error during login" });
+    }
+  });
+
+  app.get("/api/auth/me", authenticateUser, async (req: any, res) => {
+    try {
+      // Return authenticated user without password
+      const { password, ...userWithoutPassword } = req.user;
+      res.status(200).json(userWithoutPassword);
+    } catch (error) {
+      console.error("Auth check error:", error);
+      res.status(500).json({ message: "Server error during auth check" });
+    }
   });
 
   app.post("/api/auth/logout", (req, res) => {
-    req.logout(() => {
-      res.json({ message: "Logout successful" });
-    });
+    res.clearCookie("token");
+    res.status(200).json({ message: "Logged out successfully" });
   });
 
-  app.get("/api/auth/current-user", (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: "Not authenticated" });
-    }
-    const user = req.user as any;
-    res.json({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      balance: user.balance,
-      referralCode: user.referralCode
-    });
-  });
-
-  // Language preferences
-  app.post("/api/language-preference", isAuthenticated, async (req, res) => {
+  // ----- USER ROUTES -----
+  app.get("/api/users/current", authenticateUser, async (req: any, res) => {
     try {
-      const user = req.user as any;
-      const data = insertLanguagePreferenceSchema.parse({
-        userId: user.id,
-        language: req.body.language
+      const user = req.user;
+      
+      // Get additional user info like total profit
+      const activeDeposits = await storage.getActiveDepositsByUserId(user.id);
+      const totalProfit = await storage.getUserTotalProfit(user.id);
+      
+      // Return user with additional info
+      const { password, ...userWithoutPassword } = user;
+      res.status(200).json({
+        ...userWithoutPassword,
+        totalProfit,
       });
-      
-      const preference = await storage.setLanguagePreference(data);
-      res.json(preference);
     } catch (error) {
-      res.status(500).json({ error: "Failed to set language preference" });
+      console.error("Get current user error:", error);
+      res.status(500).json({ message: "Server error getting user data" });
     }
   });
 
-  app.get("/api/language-preference", isAuthenticated, async (req, res) => {
+  app.patch("/api/users/profile", authenticateUser, async (req: any, res) => {
     try {
-      const user = req.user as any;
-      const preference = await storage.getLanguagePreference(user.id);
+      const { fullName, email, language } = req.body;
+      const userId = req.user.id;
       
-      if (!preference) {
-        return res.json({ language: "ru" }); // Default language
+      // Validate email if changing
+      if (email && email !== req.user.email) {
+        const existingEmail = await storage.getUserByEmail(email);
+        if (existingEmail) {
+          return res.status(400).json({ message: "Email already exists" });
+        }
       }
       
-      res.json({ language: preference.language });
+      // Update user
+      const updatedUser = await storage.updateUser(userId, {
+        fullName: fullName !== undefined ? fullName : req.user.fullName,
+        email: email || req.user.email,
+        language: language || req.user.language,
+      });
+      
+      // Return updated user without password
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.status(200).json(userWithoutPassword);
     } catch (error) {
-      res.status(500).json({ error: "Failed to get language preference" });
+      console.error("Update profile error:", error);
+      res.status(500).json({ message: "Server error updating profile" });
     }
   });
 
-  // Tariffs
+  app.post("/api/users/change-password", authenticateUser, async (req: any, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.user.id;
+      
+      // Verify current password
+      const isPasswordValid = await bcrypt.compare(currentPassword, req.user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+      
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      // Update user password
+      await storage.updateUser(userId, { password: hashedPassword });
+      
+      res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+      console.error("Change password error:", error);
+      res.status(500).json({ message: "Server error changing password" });
+    }
+  });
+
+  // ----- TARIFF ROUTES -----
   app.get("/api/tariffs", async (req, res) => {
     try {
-      const tariffs = await storage.getTariffs();
-      res.json(tariffs);
+      const tariffs = await storage.getAllTariffs();
+      res.status(200).json(tariffs);
     } catch (error) {
-      res.status(500).json({ error: "Failed to get tariffs" });
+      console.error("Get tariffs error:", error);
+      res.status(500).json({ message: "Server error getting tariffs" });
     }
   });
 
-  app.post("/api/tariffs", isAdmin, async (req, res) => {
+  // ----- DEPOSIT ROUTES -----
+  app.get("/api/deposits", authenticateUser, async (req: any, res) => {
     try {
-      const tariffData = insertTariffSchema.parse(req.body);
-      const tariff = await storage.createTariff(tariffData);
-      res.status(201).json(tariff);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to create tariff" });
-    }
-  });
-
-  app.put("/api/tariffs/:id", isAdmin, async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const tariff = await storage.updateTariff(id, req.body);
-      res.json(tariff);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update tariff" });
-    }
-  });
-
-  // Deposits
-  app.post("/api/deposits", isAuthenticated, async (req, res) => {
-    try {
-      const user = req.user as any;
-      const depositData = insertDepositSchema.parse({
-        ...req.body,
-        userId: user.id
-      });
+      const userId = req.user.id;
+      const deposits = await storage.getDepositsByUserId(userId);
       
-      // Validate tariff exists
-      const tariff = await storage.getTariffById(depositData.tariffId);
-      if (!tariff) {
-        return res.status(400).json({ error: "Invalid tariff" });
-      }
+      // Enhance deposits with tariff info
+      const enhancedDeposits = await Promise.all(
+        deposits.map(async (deposit) => {
+          const tariff = await storage.getTariff(deposit.tariffId);
+          return { ...deposit, tariff };
+        })
+      );
       
-      // Check if amount meets minimum requirement
-      if (depositData.amount < tariff.minInvestment) {
-        return res.status(400).json({ 
-          error: `Minimum investment for this tariff is ${tariff.minInvestment}` 
-        });
+      res.status(200).json(enhancedDeposits);
+    } catch (error) {
+      console.error("Get deposits error:", error);
+      res.status(500).json({ message: "Server error getting deposits" });
+    }
+  });
+
+  app.get("/api/deposits/active", authenticateUser, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const deposits = await storage.getActiveDepositsByUserId(userId);
+      
+      // Enhance deposits with tariff info
+      const enhancedDeposits = await Promise.all(
+        deposits.map(async (deposit) => {
+          const tariff = await storage.getTariff(deposit.tariffId);
+          return { ...deposit, tariff };
+        })
+      );
+      
+      res.status(200).json(enhancedDeposits);
+    } catch (error) {
+      console.error("Get active deposits error:", error);
+      res.status(500).json({ message: "Server error getting active deposits" });
+    }
+  });
+
+  app.post("/api/deposits", authenticateUser, async (req: any, res) => {
+    try {
+      const { amount, tariffId } = req.body;
+      const userId = req.user.id;
+      
+      // Validate amount
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
       }
       
       // Check if user has enough balance
-      if (user.balance < depositData.amount) {
-        return res.status(400).json({ error: "Insufficient balance" });
+      if (req.user.balance < amount) {
+        return res.status(400).json({ message: "Insufficient balance" });
       }
       
-      const deposit = await storage.createDeposit(depositData);
-      res.status(201).json(deposit);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to create deposit" });
-    }
-  });
-
-  app.get("/api/deposits/user", isAuthenticated, async (req, res) => {
-    try {
-      const user = req.user as any;
-      const deposits = await storage.getDepositsByUserId(user.id);
-      res.json(deposits);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to get deposits" });
-    }
-  });
-
-  app.get("/api/deposits/active", isAdmin, async (req, res) => {
-    try {
-      const deposits = await storage.getActiveDeposits();
-      res.json(deposits);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to get active deposits" });
-    }
-  });
-
-  app.put("/api/deposits/:id/status", isAdmin, async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const { status } = req.body;
-      
-      if (!["active", "completed", "cancelled"].includes(status)) {
-        return res.status(400).json({ error: "Invalid status" });
+      // Get tariff
+      const tariff = await storage.getTariff(tariffId);
+      if (!tariff) {
+        return res.status(404).json({ message: "Tariff not found" });
       }
       
-      const deposit = await storage.updateDepositStatus(id, status);
-      res.json(deposit);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update deposit status" });
-    }
-  });
-
-  // Transactions
-  app.post("/api/transactions", isAuthenticated, async (req, res) => {
-    try {
-      const user = req.user as any;
-      const transactionData = insertTransactionSchema.parse({
-        ...req.body,
-        userId: user.id
+      // Check if tariff is active
+      if (!tariff.isActive) {
+        return res.status(400).json({ message: "Tariff is not active" });
+      }
+      
+      // Check minimum deposit
+      if (amount < tariff.minDeposit) {
+        return res.status(400).json({ message: `Minimum deposit for this tariff is ${tariff.minDeposit}` });
+      }
+      
+      // Calculate daily profit
+      const dailyProfit = calculateDailyProfit(amount, tariff.dailyRate);
+      
+      // Create deposit
+      const deposit = await storage.createDeposit({
+        userId,
+        tariffId,
+        amount,
+        dailyProfit,
+        status: "active",
       });
       
-      // For withdrawals, check if user has enough balance
-      if (transactionData.type === "withdrawal") {
-        if (user.balance < transactionData.amount) {
-          return res.status(400).json({ error: "Insufficient balance" });
-        }
-        
-        // Reduce the user's balance
-        await storage.updateUserBalance(user.id, -transactionData.amount);
+      // Deduct amount from user balance
+      await storage.updateUserBalance(userId, -amount);
+      
+      // Create deposit transaction
+      await storage.createTransaction({
+        userId,
+        type: "deposit",
+        amount,
+        status: "completed",
+        description: `Deposit created - ${tariff.name}`,
+      });
+      
+      // Update statistics
+      await storage.incrementNewDeposits24h();
+      await storage.incrementTotalInvested(amount);
+      
+      // Return deposit with tariff info
+      res.status(201).json({ ...deposit, tariff });
+    } catch (error) {
+      console.error("Create deposit error:", error);
+      res.status(500).json({ message: "Server error creating deposit" });
+    }
+  });
+
+  // ----- TRANSACTION ROUTES -----
+  app.get("/api/transactions", authenticateUser, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const transactions = await storage.getTransactionsByUserId(userId);
+      res.status(200).json(transactions);
+    } catch (error) {
+      console.error("Get transactions error:", error);
+      res.status(500).json({ message: "Server error getting transactions" });
+    }
+  });
+
+  app.get("/api/transactions/recent", authenticateUser, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const transactions = await storage.getRecentTransactionsByUserId(userId, 10);
+      res.status(200).json(transactions);
+    } catch (error) {
+      console.error("Get recent transactions error:", error);
+      res.status(500).json({ message: "Server error getting recent transactions" });
+    }
+  });
+
+  app.post("/api/transactions/withdraw", authenticateUser, async (req: any, res) => {
+    try {
+      const { amount } = req.body;
+      const userId = req.user.id;
+      
+      // Validate amount
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
       }
       
-      const transaction = await storage.createTransaction(transactionData);
+      // Check if user has enough balance
+      if (req.user.balance < amount) {
+        return res.status(400).json({ message: "Insufficient balance" });
+      }
+      
+      // Create withdrawal transaction
+      const transaction = await storage.createTransaction({
+        userId,
+        type: "withdraw",
+        amount,
+        status: "pending",
+        description: "Withdrawal request",
+      });
+      
+      // Deduct amount from user balance
+      await storage.updateUserBalance(userId, -amount);
+      
+      // Update statistics
+      await storage.incrementNewWithdrawals24h();
+      
       res.status(201).json(transaction);
     } catch (error) {
-      res.status(500).json({ error: "Failed to create transaction" });
+      console.error("Create withdrawal error:", error);
+      res.status(500).json({ message: "Server error creating withdrawal" });
     }
   });
 
-  app.get("/api/transactions/user", isAuthenticated, async (req, res) => {
+  // ----- REFERRAL ROUTES -----
+  app.get("/api/referrals", authenticateUser, async (req: any, res) => {
     try {
-      const user = req.user as any;
-      const transactions = await storage.getTransactionsByUserId(user.id);
-      res.json(transactions);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to get transactions" });
-    }
-  });
-
-  app.get("/api/transactions/pending-withdrawals", isAdmin, async (req, res) => {
-    try {
-      const withdrawals = await storage.getPendingWithdrawals();
-      res.json(withdrawals);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to get pending withdrawals" });
-    }
-  });
-
-  app.put("/api/transactions/:id/status", isAdmin, async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const { status } = req.body;
+      const userId = req.user.id;
       
-      if (!["pending", "completed", "failed"].includes(status)) {
-        return res.status(400).json({ error: "Invalid status" });
-      }
+      // Get user's referral code
+      const referralLink = `https://tradepo.ru/ref/${req.user.referralCode}`;
       
-      const transaction = await storage.updateTransactionStatus(id, status);
-      res.json(transaction);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update transaction status" });
-    }
-  });
-
-  // Testimonials
-  app.post("/api/testimonials", isAuthenticated, async (req, res) => {
-    try {
-      const user = req.user as any;
-      const testimonialData = insertTestimonialSchema.parse({
-        ...req.body,
-        userId: user.id
+      // Get referrals
+      const referrals = await storage.getReferralsByUserId(userId);
+      
+      // Get referral stats
+      const totalReferrals = referrals.length;
+      const activeReferrals = referrals.filter((referral: any) => referral.hasDeposits).length;
+      
+      // Get total earnings from referrals
+      const totalEarnings = await storage.getReferralEarnings(userId);
+      
+      res.status(200).json({
+        referralLink,
+        referralCode: req.user.referralCode,
+        totalReferrals,
+        activeReferrals,
+        totalEarnings,
+        referrals,
       });
-      
-      const testimonial = await storage.createTestimonial(testimonialData);
-      res.status(201).json(testimonial);
     } catch (error) {
-      res.status(500).json({ error: "Failed to create testimonial" });
+      console.error("Get referrals error:", error);
+      res.status(500).json({ message: "Server error getting referrals" });
     }
   });
 
-  app.get("/api/testimonials", async (req, res) => {
-    try {
-      const approvedOnly = req.query.approvedOnly !== "false";
-      const testimonials = await storage.getTestimonials(approvedOnly);
-      res.json(testimonials);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to get testimonials" });
-    }
-  });
-
-  app.put("/api/testimonials/:id/approve", isAdmin, async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const testimonial = await storage.approveTestimonial(id);
-      res.json(testimonial);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to approve testimonial" });
-    }
-  });
-
-  // Statistics
+  // ----- STATISTICS ROUTES -----
   app.get("/api/statistics", async (req, res) => {
     try {
-      const statistics = await storage.getStatistics();
-      res.json(statistics);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to get statistics" });
-    }
-  });
-
-  // Site content
-  app.get("/api/site-content", async (req, res) => {
-    try {
-      const content = await storage.getAllSiteContent();
-      res.json(content);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to get site content" });
-    }
-  });
-
-  app.get("/api/site-content/:key", async (req, res) => {
-    try {
-      const key = req.params.key;
-      const content = await storage.getSiteContent(key);
+      const stats = await storage.getStatistics();
       
-      if (!content) {
-        return res.status(404).json({ error: "Content not found" });
+      // Get recent activity data
+      const recentUsers = await storage.getRecentUsers(5);
+      const recentDeposits = await storage.getRecentDeposits(5);
+      const recentWithdrawals = await storage.getRecentWithdrawals(5);
+      
+      res.status(200).json({
+        ...stats,
+        recentUsers,
+        recentDeposits,
+        recentWithdrawals,
+      });
+    } catch (error) {
+      console.error("Get statistics error:", error);
+      res.status(500).json({ message: "Server error getting statistics" });
+    }
+  });
+
+  // ----- ADMIN ROUTES -----
+  app.get("/api/admin/dashboard", authenticateAdmin, async (req, res) => {
+    try {
+      // Get statistics
+      const stats = await storage.getStatistics();
+      
+      // Get additional dashboard data
+      const recentUsers = await storage.getRecentUsers(5);
+      const pendingWithdrawals = await storage.getPendingWithdrawals(5);
+      const pendingWithdrawalsCount = await storage.getPendingWithdrawalsCount();
+      const pendingWithdrawalsTotal = await storage.getPendingWithdrawalsTotal();
+      
+      // Calculate growth rates (mock data for now)
+      const userGrowthRate = 12;
+      const investmentGrowthRate = 8;
+      const payoutGrowthRate = 5;
+      
+      res.status(200).json({
+        ...stats,
+        recentUsers,
+        pendingWithdrawals,
+        pendingWithdrawalsCount,
+        pendingWithdrawalsTotal,
+        userGrowthRate,
+        investmentGrowthRate,
+        payoutGrowthRate,
+      });
+    } catch (error) {
+      console.error("Get admin dashboard error:", error);
+      res.status(500).json({ message: "Server error getting admin dashboard" });
+    }
+  });
+
+  app.get("/api/admin/users", authenticateAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.status(200).json(users);
+    } catch (error) {
+      console.error("Get admin users error:", error);
+      res.status(500).json({ message: "Server error getting users" });
+    }
+  });
+
+  app.patch("/api/admin/users/:userId", authenticateAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { balance, role } = req.body;
+      
+      // Get user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
       
-      res.json(content);
+      // Update user
+      const updatedUser = await storage.updateUser(userId, {
+        balance: balance !== undefined ? balance : user.balance,
+        role: role || user.role,
+      });
+      
+      // Return updated user without password
+      const { password, ...userWithoutPassword } = updatedUser;
+      res.status(200).json(userWithoutPassword);
     } catch (error) {
-      res.status(500).json({ error: "Failed to get site content" });
+      console.error("Update user error:", error);
+      res.status(500).json({ message: "Server error updating user" });
     }
   });
 
-  app.post("/api/site-content", isAdmin, async (req, res) => {
+  app.delete("/api/admin/users/:userId", authenticateAdmin, async (req, res) => {
     try {
-      const contentData = insertSiteContentSchema.parse(req.body);
-      const content = await storage.setSiteContent(contentData);
+      const userId = parseInt(req.params.userId);
+      
+      // Delete user
+      await storage.deleteUser(userId);
+      
+      res.status(200).json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Delete user error:", error);
+      res.status(500).json({ message: "Server error deleting user" });
+    }
+  });
+
+  app.get("/api/admin/deposits", authenticateAdmin, async (req, res) => {
+    try {
+      const deposits = await storage.getAllDeposits();
+      
+      // Enhance deposits with user and tariff info
+      const enhancedDeposits = await Promise.all(
+        deposits.map(async (deposit) => {
+          const user = await storage.getUser(deposit.userId);
+          const tariff = await storage.getTariff(deposit.tariffId);
+          
+          // Remove password from user
+          const { password, ...userWithoutPassword } = user;
+          
+          return { 
+            ...deposit, 
+            user: userWithoutPassword,
+            tariff,
+          };
+        })
+      );
+      
+      res.status(200).json(enhancedDeposits);
+    } catch (error) {
+      console.error("Get admin deposits error:", error);
+      res.status(500).json({ message: "Server error getting deposits" });
+    }
+  });
+
+  app.post("/api/admin/deposits/:depositId/cancel", authenticateAdmin, async (req, res) => {
+    try {
+      const depositId = parseInt(req.params.depositId);
+      
+      // Get deposit
+      const deposit = await storage.getDeposit(depositId);
+      if (!deposit) {
+        return res.status(404).json({ message: "Deposit not found" });
+      }
+      
+      // Check if deposit is active
+      if (deposit.status !== "active") {
+        return res.status(400).json({ message: "Deposit is not active" });
+      }
+      
+      // Cancel deposit
+      await storage.updateDepositStatus(depositId, "cancelled");
+      
+      // Return deposit amount to user
+      await storage.updateUserBalance(deposit.userId, deposit.amount);
+      
+      // Create refund transaction
+      await storage.createTransaction({
+        userId: deposit.userId,
+        type: "deposit_refund",
+        amount: deposit.amount,
+        status: "completed",
+        description: "Deposit cancelled by admin",
+      });
+      
+      res.status(200).json({ message: "Deposit cancelled successfully" });
+    } catch (error) {
+      console.error("Cancel deposit error:", error);
+      res.status(500).json({ message: "Server error cancelling deposit" });
+    }
+  });
+
+  app.get("/api/admin/withdrawals", authenticateAdmin, async (req, res) => {
+    try {
+      const withdrawals = await storage.getAllWithdrawals();
+      
+      // Enhance withdrawals with user info
+      const enhancedWithdrawals = await Promise.all(
+        withdrawals.map(async (withdrawal) => {
+          const user = await storage.getUser(withdrawal.userId);
+          
+          // Remove password from user
+          const { password, ...userWithoutPassword } = user;
+          
+          return { 
+            ...withdrawal, 
+            user: userWithoutPassword,
+          };
+        })
+      );
+      
+      res.status(200).json(enhancedWithdrawals);
+    } catch (error) {
+      console.error("Get admin withdrawals error:", error);
+      res.status(500).json({ message: "Server error getting withdrawals" });
+    }
+  });
+
+  app.post("/api/admin/withdrawals/:withdrawalId/approve", authenticateAdmin, async (req, res) => {
+    try {
+      const withdrawalId = parseInt(req.params.withdrawalId);
+      
+      // Get withdrawal
+      const withdrawal = await storage.getTransaction(withdrawalId);
+      if (!withdrawal) {
+        return res.status(404).json({ message: "Withdrawal not found" });
+      }
+      
+      // Check if withdrawal is pending
+      if (withdrawal.status !== "pending" || withdrawal.type !== "withdraw") {
+        return res.status(400).json({ message: "Invalid withdrawal or status" });
+      }
+      
+      // Approve withdrawal
+      await storage.updateTransactionStatus(withdrawalId, "completed");
+      
+      // Update statistics
+      await storage.incrementTotalPaid(withdrawal.amount);
+      
+      res.status(200).json({ message: "Withdrawal approved successfully" });
+    } catch (error) {
+      console.error("Approve withdrawal error:", error);
+      res.status(500).json({ message: "Server error approving withdrawal" });
+    }
+  });
+
+  app.post("/api/admin/withdrawals/:withdrawalId/reject", authenticateAdmin, async (req, res) => {
+    try {
+      const withdrawalId = parseInt(req.params.withdrawalId);
+      
+      // Get withdrawal
+      const withdrawal = await storage.getTransaction(withdrawalId);
+      if (!withdrawal) {
+        return res.status(404).json({ message: "Withdrawal not found" });
+      }
+      
+      // Check if withdrawal is pending
+      if (withdrawal.status !== "pending" || withdrawal.type !== "withdraw") {
+        return res.status(400).json({ message: "Invalid withdrawal or status" });
+      }
+      
+      // Reject withdrawal
+      await storage.updateTransactionStatus(withdrawalId, "rejected");
+      
+      // Return amount to user
+      await storage.updateUserBalance(withdrawal.userId, withdrawal.amount);
+      
+      res.status(200).json({ message: "Withdrawal rejected successfully" });
+    } catch (error) {
+      console.error("Reject withdrawal error:", error);
+      res.status(500).json({ message: "Server error rejecting withdrawal" });
+    }
+  });
+
+  app.get("/api/admin/tariffs", authenticateAdmin, async (req, res) => {
+    try {
+      const tariffs = await storage.getAllTariffs();
+      res.status(200).json(tariffs);
+    } catch (error) {
+      console.error("Get admin tariffs error:", error);
+      res.status(500).json({ message: "Server error getting tariffs" });
+    }
+  });
+
+  app.post("/api/admin/tariffs", authenticateAdmin, async (req, res) => {
+    try {
+      const { name, nameEn, dailyRate, minDeposit, referralBonus, isActive } = req.body;
+      
+      // Create tariff
+      const tariff = await storage.createTariff({
+        name,
+        nameEn,
+        dailyRate,
+        minDeposit,
+        referralBonus,
+        isActive: isActive !== undefined ? isActive : true,
+      });
+      
+      res.status(201).json(tariff);
+    } catch (error) {
+      console.error("Create tariff error:", error);
+      res.status(500).json({ message: "Server error creating tariff" });
+    }
+  });
+
+  app.patch("/api/admin/tariffs/:tariffId", authenticateAdmin, async (req, res) => {
+    try {
+      const tariffId = parseInt(req.params.tariffId);
+      const { name, nameEn, dailyRate, minDeposit, referralBonus, isActive } = req.body;
+      
+      // Get tariff
+      const tariff = await storage.getTariff(tariffId);
+      if (!tariff) {
+        return res.status(404).json({ message: "Tariff not found" });
+      }
+      
+      // Update tariff
+      const updatedTariff = await storage.updateTariff(tariffId, {
+        name: name !== undefined ? name : tariff.name,
+        nameEn: nameEn !== undefined ? nameEn : tariff.nameEn,
+        dailyRate: dailyRate !== undefined ? dailyRate : tariff.dailyRate,
+        minDeposit: minDeposit !== undefined ? minDeposit : tariff.minDeposit,
+        referralBonus: referralBonus !== undefined ? referralBonus : tariff.referralBonus,
+        isActive: isActive !== undefined ? isActive : tariff.isActive,
+      });
+      
+      res.status(200).json(updatedTariff);
+    } catch (error) {
+      console.error("Update tariff error:", error);
+      res.status(500).json({ message: "Server error updating tariff" });
+    }
+  });
+
+  app.get("/api/admin/content", authenticateAdmin, async (req, res) => {
+    try {
+      const content = await storage.getAllContent();
+      res.status(200).json(content);
+    } catch (error) {
+      console.error("Get admin content error:", error);
+      res.status(500).json({ message: "Server error getting content" });
+    }
+  });
+
+  app.post("/api/admin/content", authenticateAdmin, async (req, res) => {
+    try {
+      const { key, valueRu, valueEn, valueTj, valueKz, valueUz } = req.body;
+      
+      // Check if key already exists
+      const existingContent = await storage.getContentByKey(key);
+      if (existingContent) {
+        return res.status(400).json({ message: "Content key already exists" });
+      }
+      
+      // Create content
+      const content = await storage.createContent({
+        key,
+        valueRu,
+        valueEn: valueEn || null,
+        valueTj: valueTj || null,
+        valueKz: valueKz || null,
+        valueUz: valueUz || null,
+      });
+      
       res.status(201).json(content);
     } catch (error) {
-      res.status(500).json({ error: "Failed to set site content" });
+      console.error("Create content error:", error);
+      res.status(500).json({ message: "Server error creating content" });
     }
   });
 
-  // Admin earnings distribution simulation
-  app.post("/api/admin/simulate-earnings", isAdmin, async (req, res) => {
+  app.patch("/api/admin/content/:contentId", authenticateAdmin, async (req, res) => {
     try {
-      const activeDeposits = await storage.getActiveDeposits();
-      let processedCount = 0;
+      const contentId = parseInt(req.params.contentId);
+      const { valueRu, valueEn, valueTj, valueKz, valueUz } = req.body;
       
-      for (const deposit of activeDeposits) {
-        const tariff = await storage.getTariffById(deposit.tariffId);
-        if (!tariff) continue;
-        
-        const earnings = deposit.amount * (tariff.interestRate / 100);
-        
-        // Add earnings to user balance
-        await storage.updateUserBalance(deposit.userId, earnings);
-        
-        // Create profit transaction
-        await storage.createTransaction({
-          userId: deposit.userId,
-          type: "profit",
-          amount: earnings,
-          status: "completed",
-          depositId: deposit.id,
-          description: `Daily profit from ${tariff.name} plan`
-        });
-        
-        // Handle referral bonuses if applicable
-        const user = await storage.getUserById(deposit.userId);
-        if (user && user.referrerId) {
-          const referralBonus = earnings * (tariff.referralBonus / 100);
-          
-          await storage.updateUserBalance(user.referrerId, referralBonus);
-          
-          await storage.createTransaction({
-            userId: user.referrerId,
-            type: "referral",
-            amount: referralBonus,
-            status: "completed",
-            description: `Referral bonus from ${user.username}`
-          });
-        }
-        
-        processedCount++;
+      // Get content
+      const content = await storage.getContent(contentId);
+      if (!content) {
+        return res.status(404).json({ message: "Content not found" });
       }
       
-      res.json({ 
-        message: "Earnings simulation completed", 
-        processedDeposits: processedCount 
+      // Update content
+      const updatedContent = await storage.updateContent(contentId, {
+        valueRu: valueRu !== undefined ? valueRu : content.valueRu,
+        valueEn: valueEn !== undefined ? valueEn : content.valueEn,
+        valueTj: valueTj !== undefined ? valueTj : content.valueTj,
+        valueKz: valueKz !== undefined ? valueKz : content.valueKz,
+        valueUz: valueUz !== undefined ? valueUz : content.valueUz,
       });
+      
+      res.status(200).json(updatedContent);
     } catch (error) {
-      res.status(500).json({ error: "Failed to simulate earnings" });
+      console.error("Update content error:", error);
+      res.status(500).json({ message: "Server error updating content" });
     }
   });
 
-  // Generate fake activity for demonstration
-  app.get("/api/fake-activity", async (req, res) => {
-    try {
-      // This endpoint is just for demonstration purposes
-      // It returns randomized mock data for the activity section
-      
-      const newUsers = Array(10).fill(null).map((_, i) => ({
-        id: i + 1,
-        initial: String.fromCharCode(65 + Math.floor(Math.random() * 26)),
-        name: ["Алексей В.", "Ольга М.", "Михаил К.", "Елена Д.", "Иван С.", "Анна К.", "Сергей Р.", "Мария Л.", "Дмитрий П.", "Татьяна Н."][i],
-        timeAgo: Math.floor(Math.random() * 60) + " минут назад"
-      }));
-      
-      const newDeposits = Array(10).fill(null).map((_, i) => ({
-        id: i + 1,
-        name: ["Александр П.", "Марина К.", "Дмитрий Л.", "Светлана Ф.", "Артем Ю.", "Валентина С.", "Павел Р.", "Екатерина М.", "Николай В.", "Юлия З."][i],
-        plan: ["Базовый", "Премиум", "Элит"][Math.floor(Math.random() * 3)],
-        amount: Math.floor(Math.random() * 1950) + 150,
-        timeAgo: Math.floor(Math.random() * 60) + " минут назад"
-      }));
-      
-      const newWithdrawals = Array(10).fill(null).map((_, i) => ({
-        id: i + 1,
-        name: ["Николай Г.", "Валентина Р.", "Сергей П.", "Анна К.", "Игорь В.", "Ольга С.", "Максим Д.", "Ирина Ж.", "Артур Т.", "Наталья Б."][i],
-        type: Math.random() > 0.3 ? "Прибыль" : "Прибыль + Капитал",
-        amount: Math.floor(Math.random() * 1500) + 100,
-        timeAgo: Math.floor(Math.random() * 60) + " минут назад"
-      }));
-      
-      res.json({
-        newUsers,
-        newDeposits,
-        newWithdrawals
-      });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to get fake activity data" });
-    }
-  });
-
+  // Create HTTP server
   const httpServer = createServer(app);
 
   return httpServer;

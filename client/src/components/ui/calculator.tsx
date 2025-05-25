@@ -1,230 +1,171 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from '@/i18n';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { TrendingUp, ArrowRightIcon } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
-import { useQuery } from '@tanstack/react-query';
-import { cn } from '@/lib/utils';
-import { useAuth } from '@/lib/auth';
-import { useNavigate } from 'wouter';
+import { calculateProfit, formatCurrency } from '@/lib/utils';
 
-interface Tariff {
-  id: number;
-  name: string;
-  minAmount: number;
-  dailyPercent: number;
-  referralPercent: number;
-  isActive: boolean;
-  createdAt: string;
+interface CalculatorProps {
+  onInvest?: (amount: number, rate: number, days: number) => void;
+  className?: string;
 }
 
-export function InvestmentCalculator() {
+export function Calculator({ onInvest, className }: CalculatorProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  
   const [amount, setAmount] = useState(500);
+  const [rate, setRate] = useState(10);
   const [days, setDays] = useState(30);
-  const [selectedTariffId, setSelectedTariffId] = useState<number | null>(null);
-  
-  const { data: tariffs = [] } = useQuery<Tariff[]>({
-    queryKey: ['/api/tariffs'],
-  });
+  const [dailyProfit, setDailyProfit] = useState(0);
+  const [totalProfit, setTotalProfit] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
 
-  // Select premium tariff by default when tariffs are loaded
   useEffect(() => {
-    if (tariffs.length > 0 && !selectedTariffId) {
-      // Find premium tariff (usually the middle one)
-      const premiumTariff = tariffs.find(t => t.name === 'Премиум' || t.name === 'Premium');
-      if (premiumTariff) {
-        setSelectedTariffId(premiumTariff.id);
-      } else {
-        // Default to the first tariff if premium not found
-        setSelectedTariffId(tariffs[0].id);
-      }
-    }
-  }, [tariffs, selectedTariffId]);
+    const { dailyProfit, totalProfit, totalAmount } = calculateProfit(amount, rate, days);
+    setDailyProfit(dailyProfit);
+    setTotalProfit(totalProfit);
+    setTotalAmount(totalAmount);
+  }, [amount, rate, days]);
 
-  const selectedTariff = tariffs.find(t => t.id === selectedTariffId) || null;
-  
-  const dailyRate = selectedTariff?.dailyPercent || 0;
-  const dailyProfit = amount * (dailyRate / 100);
-  const totalProfit = dailyProfit * days;
-  const finalAmount = amount + totalProfit;
-  
-  const handleInvestClick = () => {
-    if (!user) {
-      navigate('/login');
-    } else {
-      navigate('/dashboard/deposits');
+  const handleAmountChange = (value: number) => {
+    setAmount(value);
+  };
+
+  const handleRateChange = (value: number) => {
+    setRate(value);
+  };
+
+  const handleDaysChange = (value: number) => {
+    setDays(value);
+  };
+
+  const handleInvest = () => {
+    if (onInvest) {
+      onInvest(amount, rate, days);
     }
   };
-  
-  const handleAmountChange = (newAmount: number) => {
-    setAmount(newAmount);
-    
-    // If amount is less than the selected tariff's minimum, try to find a suitable tariff
-    if (selectedTariff && newAmount < selectedTariff.minAmount) {
-      const suitableTariff = tariffs
-        .filter(t => t.isActive && newAmount >= t.minAmount)
-        .sort((a, b) => b.minAmount - a.minAmount)[0];
-      
-      if (suitableTariff) {
-        setSelectedTariffId(suitableTariff.id);
-      }
-    }
-  };
-  
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-2">{t('home.calculator.title')}</h2>
-        <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          {t('home.calculator.subtitle')}
-        </p>
-      </div>
-      
-      <Card className="bg-white dark:bg-gray-900 shadow-xl overflow-hidden">
-        <CardContent className="p-0">
-          <div className="grid md:grid-cols-2 gap-0">
-            <div className="p-6 md:p-8 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800">
-              <div className="mb-6">
-                <Label htmlFor="investment-amount" className="mb-2 block">
-                  {t('home.calculator.amount')}
-                </Label>
-                <Input
-                  id="investment-amount"
-                  type="number"
-                  min={100}
-                  value={amount}
-                  onChange={(e) => handleAmountChange(Number(e.target.value))}
-                  className="mb-2"
-                />
-                <Slider
-                  value={[amount]}
-                  min={100}
-                  max={10000}
-                  step={100}
-                  onValueChange={(values) => handleAmountChange(values[0])}
-                  className="mt-4"
-                />
-              </div>
-              
-              <div className="mb-6">
-                <Label className="mb-2 block">{t('home.calculator.tariff')}</Label>
-                <div className="grid grid-cols-3 gap-3">
-                  {tariffs.map((tariff) => (
-                    <Button
-                      key={tariff.id}
-                      type="button"
-                      variant={selectedTariffId === tariff.id ? "default" : "outline"}
-                      onClick={() => setSelectedTariffId(tariff.id)}
-                      className={cn(
-                        amount < tariff.minAmount && "opacity-50 cursor-not-allowed",
-                        tariff.name === "Премиум" || tariff.name === "Premium" ? "relative" : ""
-                      )}
-                      disabled={amount < tariff.minAmount}
-                    >
-                      {(tariff.name === "Премиум" || tariff.name === "Premium") && (
-                        <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">
-                          {t('home.tariffs.premium.popular')}
-                        </span>
-                      )}
-                      {tariff.name}
-                    </Button>
-                  ))}
-                </div>
-                {selectedTariff && (
-                  <p className="text-sm text-gray-500 mt-2">
-                    {t('home.tariffs.minDeposit')} <span className="font-bold">${selectedTariff.minAmount}</span>
-                  </p>
-                )}
-              </div>
-              
-              <div className="mb-6">
-                <Label htmlFor="investment-days" className="mb-2 block">
-                  {t('home.calculator.days')}
-                </Label>
-                <Input
-                  id="investment-days"
-                  type="number"
-                  min={1}
-                  max={365}
-                  value={days}
-                  onChange={(e) => setDays(Number(e.target.value))}
-                  className="mb-2"
-                />
-                <Slider
-                  value={[days]}
-                  min={1}
-                  max={365}
-                  step={1}
-                  onValueChange={(values) => setDays(values[0])}
-                  className="mt-4"
-                />
+    <Card className={className}>
+      <CardContent className="p-6">
+        <div className="grid md:grid-cols-2 gap-8">
+          <div>
+            <div className="mb-6">
+              <Label className="block text-sm font-medium mb-2">
+                {t('calculator.investmentAmount')}
+              </Label>
+              <Input
+                type="number"
+                min="100"
+                max="10000"
+                value={amount}
+                onChange={(e) => handleAmountChange(Number(e.target.value))}
+                className="w-full px-4 py-3 border-gray-300 rounded-lg"
+              />
+              <Slider
+                defaultValue={[amount]}
+                min={100}
+                max={10000}
+                step={100}
+                onValueChange={([value]) => handleAmountChange(value)}
+                className="w-full mt-2"
+              />
+            </div>
+            
+            <div className="mb-6">
+              <Label className="block text-sm font-medium mb-2">
+                {t('calculator.tariff')}
+              </Label>
+              <div className="grid grid-cols-3 gap-3">
+                <Button
+                  variant={rate === 5 ? "default" : "outline"}
+                  onClick={() => handleRateChange(5)}
+                >
+                  {t('calculator.tariffBasic')} 5%
+                </Button>
+                <Button
+                  variant={rate === 10 ? "default" : "outline"}
+                  onClick={() => handleRateChange(10)}
+                >
+                  {t('calculator.tariffPremium')} 10%
+                </Button>
+                <Button
+                  variant={rate === 15 ? "default" : "outline"}
+                  onClick={() => handleRateChange(15)}
+                >
+                  {t('calculator.tariffElite')} 15%
+                </Button>
               </div>
             </div>
             
-            <div className="p-6 md:p-8 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-gray-800 dark:to-gray-800">
-              <h3 className="text-lg font-semibold mb-6 text-gray-700 dark:text-gray-300">
-                {t('home.calculator.results')}
-              </h3>
-              
-              <div className="mb-8">
-                <div className="text-3xl font-bold text-primary mb-2">
-                  {formatCurrency(totalProfit)}
-                </div>
-                <div className="flex items-center text-sm text-green-600 dark:text-green-400">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  <span>
-                    {dailyRate}% {t('home.tariffs.perDay')}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="space-y-3 mb-8">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">{t('home.calculator.dailyProfit')}</span>
-                  <span className="font-medium text-green-600 dark:text-green-400">
-                    {formatCurrency(dailyProfit)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">{t('home.calculator.amount')}</span>
-                  <span className="font-medium">
-                    {formatCurrency(amount)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">{t('home.calculator.totalProfit')}</span>
-                  <span className="font-medium text-primary">
-                    {formatCurrency(totalProfit)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">{t('home.calculator.finalAmount')}</span>
-                  <span className="font-bold">
-                    {formatCurrency(finalAmount)}
-                  </span>
-                </div>
-              </div>
-              
-              <Button 
-                className="w-full" 
-                size="lg"
-                onClick={handleInvestClick}
-              >
-                {t('home.calculator.invest')}
-                <ArrowRightIcon className="ml-2 h-4 w-4" />
-              </Button>
+            <div className="mb-6">
+              <Label className="block text-sm font-medium mb-2">
+                {t('calculator.term')}
+              </Label>
+              <Input
+                type="number"
+                min="1"
+                max="365"
+                value={days}
+                onChange={(e) => handleDaysChange(Number(e.target.value))}
+                className="w-full px-4 py-3 border-gray-300 rounded-lg"
+              />
+              <Slider
+                defaultValue={[days]}
+                min={1}
+                max={365}
+                step={1}
+                onValueChange={([value]) => handleDaysChange(value)}
+                className="w-full mt-2"
+              />
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          
+          <div className="bg-primary/5 dark:bg-gray-800 rounded-xl p-6">
+            <h3 className="text-lg font-semibold mb-4">
+              {t('calculator.yourProfit')}
+            </h3>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t('calculator.dailyProfit')}
+              </p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {formatCurrency(dailyProfit)}
+              </p>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t('calculator.totalProfit')}
+              </p>
+              <p className="text-2xl font-bold text-primary dark:text-primary-foreground">
+                {formatCurrency(totalProfit)}
+              </p>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {t('calculator.totalAmount')}
+              </p>
+              <p className="text-3xl font-bold">
+                {formatCurrency(totalAmount)}
+              </p>
+              <div className="flex items-center mt-2 text-sm text-green-600 dark:text-green-400">
+                <span>{rate}% {t('calculator.perDay')}</span>
+              </div>
+            </div>
+            
+            <Button
+              className="w-full"
+              onClick={handleInvest}
+            >
+              {t('calculator.investNow')}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

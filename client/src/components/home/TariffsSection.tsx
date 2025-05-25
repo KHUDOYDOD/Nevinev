@@ -129,7 +129,7 @@ export default function TariffsSection() {
                   <div className="mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-4">
                     <p className="text-center">
                       <span className="block text-sm text-muted-foreground mb-1">Минимальная инвестиция</span>
-                      <span className="text-2xl font-bold">${tariff.minAmount || 100}</span>
+                      <span className="text-2xl font-bold">{tariff.minAmount || 100}$</span>
                     </p>
                   </div>
                   

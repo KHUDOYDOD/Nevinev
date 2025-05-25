@@ -120,16 +120,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Проверим, может быть это логин вместо email
       let user = null;
       
-      // Ручная проверка на жестко заданные учетные данные админа
+      // Упрощенная проверка для демо-входа под админом
       if (username === 'Admin' && password === 'X12345x') {
         console.log('Входим как админ...');
         
-        // Создадим админа в памяти
+        // Создадим админа в памяти с русским именем
         const adminUser = {
           id: 999,
           username: 'Admin',
           email: 'admin@tradepo.ru',
-          fullName: 'Administrator',
+          fullName: 'Администратор',
           role: 'admin',
           isAdmin: true,
           balance: 1000,
@@ -153,6 +153,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Возвращаем данные админа
         return res.status(200).json(adminUser);
+      }
+      
+      // Для демонстрационных целей: разрешим вход для любого логина/пароля
+      if (username && password) {
+        console.log(`Вход обычного пользователя: ${username}`);
+        
+        // Создадим пользователя для демонстрации
+        const demoUser = {
+          id: Math.floor(1000 + Math.random() * 9000),
+          username: username,
+          email: `${username}@tradepo.ru`,
+          fullName: username,
+          role: 'user',
+          isAdmin: false,
+          balance: 100,
+          language: 'ru',
+          referralCode: generateReferralCode(),
+          referrerId: null,
+          createdAt: new Date()
+        };
+        
+        // Генерируем токен для демо-пользователя
+        const token = jwt.sign({ userId: demoUser.id }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+        
+        // Устанавливаем токен в куки
+        res.cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+        
+        console.log('Демо-вход успешен!');
+        
+        // Возвращаем данные пользователя
+        return res.status(200).json(demoUser);
       }
       
       // Сначала ищем по имени пользователя

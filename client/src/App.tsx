@@ -4,10 +4,10 @@ import { queryClient } from "@/lib/queryClient";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { Switch, Route } from "wouter";
+import { Route, Switch } from "wouter";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-// Страницы
+// Pages
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
@@ -17,8 +17,8 @@ import NotFound from "@/pages/not-found";
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <TooltipProvider>
             <Switch>
@@ -32,7 +32,7 @@ export default function App() {
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </AuthProvider>
   );
 }

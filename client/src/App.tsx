@@ -6,8 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Home from "@/pages/Home";
-import Login from "@/pages/auth/login";
-import Register from "@/pages/auth/register";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 import DashboardIndex from "@/pages/dashboard/index";
 import DashboardDeposits from "@/pages/dashboard/deposits";
 import DashboardTransactions from "@/pages/dashboard/transactions";
@@ -99,15 +99,19 @@ function Router() {
   return <div className="flex h-screen w-full items-center justify-center">Loading...</div>;
 }
 
+import { AuthProvider } from "@/contexts/AuthContext";
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

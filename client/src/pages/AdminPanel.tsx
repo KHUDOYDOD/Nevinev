@@ -43,7 +43,8 @@ import { User, Transaction } from "@shared/schema";
 
 export default function AdminPanel() {
   const { t } = useTranslation();
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("dashboard");
 

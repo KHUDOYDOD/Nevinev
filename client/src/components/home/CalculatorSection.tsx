@@ -16,7 +16,8 @@ type Tariff = {
 
 export default function CalculatorSection() {
   const { t } = useTranslation();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   
   // Fetch tariffs from API
   const { data: tariffs, isLoading } = useQuery<Tariff[]>({

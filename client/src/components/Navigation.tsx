@@ -17,7 +17,8 @@ import { Menu, X, User, LogOut, Settings, Shield } from "lucide-react";
 export default function Navigation() {
   const { t } = useTranslation();
   const [location] = useLocation();
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {

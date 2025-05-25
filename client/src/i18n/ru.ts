@@ -266,7 +266,7 @@ export default {
     referralProgramDescription: 'Приглашайте друзей и получайте 0.1% от их инвестиций.',
     yourReferralLink: 'Ваша реферальная ссылка:',
     copy: 'Копировать',
-    referrals: 'Рефералов',
+    refList: 'Рефералов',
     active: 'Активных',
     earned: 'Заработано',
     detailedStatistics: 'Подробная статистика'

@@ -266,7 +266,7 @@ export default {
     referralProgramDescription: 'Do\'stlaringizni taklif qiling va ularning investitsiyalaridan 0.1% oling.',
     yourReferralLink: 'Sizning referal havolangiz:',
     copy: 'Nusxalash',
-    referrals: 'Referallar',
+    refList: 'Referallar',
     active: 'Faol',
     earned: 'Ishlab topilgan',
     detailedStatistics: 'Batafsil statistika'
@@ -297,7 +297,7 @@ export default {
     contentManagement: 'Kontent boshqaruvi',
     mainPageTitle: 'Asosiy sahifa sarlavhasi',
     mainPageSubtitle: 'Asosiy sahifa taglavhasi',
-    statistics: 'Statistika',
+    statData: 'Statistika',
     withdrawalRequests: 'Yechib olish so\'rovlari',
     waiting: 'Kutilmoqda',
     id: 'ID',

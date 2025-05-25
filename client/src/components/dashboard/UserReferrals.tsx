@@ -1,73 +1,107 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import { useTranslation } from "react-i18next";
+import { Copy, Users, TrendingUp, UserPlus, Link as LinkIcon } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Table, 
   TableBody, 
-  TableCaption, 
   TableCell, 
   TableHead, 
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { 
-  Copy, 
-  Users, 
-  Link as LinkIcon,
-  Award,
-  DollarSign,
-  BadgeCheck,
-  Share2,
-  ExternalLink,
-  AlertCircle
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
 
 interface Referral {
   id: number;
   username: string;
   email: string;
-  joinDate: string;
-  hasDeposits: boolean;
-  totalDeposits?: number;
+  joinDate: Date;
+  isActive: boolean;
+  earned: number;
 }
 
 interface UserReferralsProps {
   referralCode: string;
   referrals: Referral[];
-  totalEarnings: number;
+  totalEarned?: number;
 }
 
 export default function UserReferrals({ 
-  referralCode = "REF12345", 
-  referrals = [], 
-  totalEarnings = 0 
+  referralCode, 
+  referrals = [],
+  totalEarned = 0
 }: UserReferralsProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [referralLink] = useState(`https://tradepo.ru/?ref=${referralCode}`);
+  const [copied, setCopied] = useState(false);
   
-  // Расчет количества активных и неактивных рефералов
-  const activeReferrals = referrals.filter(ref => ref.hasDeposits).length;
-  const pendingReferrals = referrals.length - activeReferrals;
-
-  // Функция копирования в буфер обмена
-  const copyToClipboard = (text: string, message: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: t('dashboard.copied'),
-      description: message,
+  // Формирование реферальной ссылки
+  const referralLink = `https://tradepo.ru/register?ref=${referralCode}`;
+  
+  // Форматирование чисел для отображения с 2 знаками после запятой
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('ru-RU', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  };
+  
+  // Функция для форматирования даты
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(date);
+  };
+  
+  // Функция копирования реферальной ссылки
+  const copyReferralLink = () => {
+    navigator.clipboard.writeText(referralLink).then(() => {
+      setCopied(true);
+      toast({
+        title: t('dashboard.linkCopied'),
+        description: t('dashboard.linkCopiedDesc')
+      });
+      
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(err => {
+      toast({
+        title: t('common.error'),
+        description: t('dashboard.copyError'),
+        variant: "destructive"
+      });
     });
+  };
+  
+  // Функция создания приглашения
+  const shareReferral = () => {
+    try {
+      if (navigator.share) {
+        navigator.share({
+          title: t('dashboard.inviteTitle'),
+          text: t('dashboard.inviteText'),
+          url: referralLink,
+        });
+      } else {
+        copyReferralLink();
+      }
+    } catch (error) {
+      copyReferralLink();
+    }
   };
 
   return (
@@ -75,218 +109,194 @@ export default function UserReferrals({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      className="space-y-4"
     >
-      <Card className="shadow-md border dark:border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center">
-            <Users className="h-5 w-5 mr-2 text-indigo-500" />
-            {t('dashboard.referralProgram')}
-          </CardTitle>
-          <CardDescription>
-            {t('dashboard.referralProgramDesc')}
-          </CardDescription>
+      <Card className="border dark:border-gray-700">
+        <CardHeader className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-blue-500/10" />
+          <div className="relative">
+            <CardTitle className="text-xl flex items-center">
+              <Users className="h-5 w-5 mr-2 text-indigo-500" />
+              {t('dashboard.referralProgram')}
+            </CardTitle>
+            <CardDescription>
+              {t('dashboard.referralProgramDescription')}
+            </CardDescription>
+          </div>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="space-y-6">
           {/* Реферальная ссылка */}
-          <div className="bg-gradient-to-r from-violet-100 to-indigo-100 dark:from-violet-900/30 dark:to-indigo-900/30 p-4 rounded-lg mb-6">
-            <h3 className="text-md font-medium mb-2 flex items-center">
-              <LinkIcon className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
-              {t('dashboard.yourReferralLink')}
-            </h3>
-            
-            <div className="flex items-center space-x-2">
+          <div className="rounded-lg border bg-card p-4 dark:border-gray-700">
+            <h3 className="mb-2 text-sm font-medium">{t('dashboard.yourReferralLink')} </h3>
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
-                <Input 
-                  readOnly 
+                <LinkIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                <Input
                   value={referralLink}
-                  className="pr-10 bg-white/80 dark:bg-gray-800/80 border-indigo-200 dark:border-indigo-800"
+                  readOnly
+                  className="pl-8 pr-24 text-sm font-mono bg-white dark:bg-gray-800"
                 />
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="absolute right-0 top-0 h-full text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
-                  onClick={() => copyToClipboard(referralLink, t('dashboard.referralLinkCopied'))}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
               </div>
-              
-              <Button 
-                variant="default"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                onClick={() => {
-                  // Поделиться ссылкой
-                  if (navigator.share) {
-                    navigator.share({
-                      title: t('dashboard.inviteToTradepo'),
-                      text: t('dashboard.inviteText'),
-                      url: referralLink
-                    });
-                  } else {
-                    copyToClipboard(referralLink, t('dashboard.referralLinkCopied'));
-                  }
-                }}
+              <Button
+                onClick={copyReferralLink}
+                variant="outline"
+                className={copied ? "bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800" : "border-indigo-500 text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-gray-800"}
               >
-                <Share2 className="h-4 w-4 mr-1" />
-                {t('dashboard.share')}
+                {copied ? (
+                  <span className="flex items-center">
+                    <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 12L10 17L20 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {t('dashboard.copied')}
+                  </span>
+                ) : (
+                  <span className="flex items-center">
+                    <Copy className="w-4 h-4 mr-1" />
+                    {t('dashboard.copy')}
+                  </span>
+                )}
               </Button>
-            </div>
-            
-            <div className="flex flex-wrap mt-4 gap-2">
-              <div className="text-xs text-indigo-700 dark:text-indigo-300 bg-white/80 dark:bg-gray-800/50 px-3 py-1.5 rounded-full flex items-center">
-                <Award className="h-3 w-3 mr-1" />
-                <span>{t('dashboard.referralBonus')}: 5%</span>
-              </div>
-              
-              <div className="text-xs text-indigo-700 dark:text-indigo-300 bg-white/80 dark:bg-gray-800/50 px-3 py-1.5 rounded-full flex items-center">
-                <BadgeCheck className="h-3 w-3 mr-1" />
-                <span>{t('dashboard.instantPayouts')}</span>
-              </div>
-              
-              <div className="text-xs text-indigo-700 dark:text-indigo-300 bg-white/80 dark:bg-gray-800/50 px-3 py-1.5 rounded-full flex items-center">
-                <DollarSign className="h-3 w-3 mr-1" />
-                <span>{t('dashboard.unlimitedEarnings')}</span>
-              </div>
+              <Button
+                onClick={shareReferral}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+              >
+                <UserPlus className="w-4 h-4 mr-1" />
+                {t('dashboard.invite')}
+              </Button>
             </div>
           </div>
           
           {/* Статистика */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-100 dark:border-gray-700">
-              <div className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                {referrals.length}
-              </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                <Users className="h-4 w-4 mr-1" />
-                {t('dashboard.totalReferrals')}
-              </div>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/40 border-indigo-100 dark:border-indigo-900">
+              <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                <div className="h-12 w-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center mb-2">
+                  <UserPlus className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.refList')}</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-50">{referrals.length}</p>
+              </CardContent>
+            </Card>
             
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-100 dark:border-gray-700">
-              <div className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                ${totalEarnings.toLocaleString()}
-              </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                <DollarSign className="h-4 w-4 mr-1" />
-                {t('dashboard.totalEarnings')}
-              </div>
-            </div>
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/40 dark:to-emerald-950/40 border-green-100 dark:border-green-900">
+              <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center mb-2">
+                  <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.active')}</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-50">
+                  {referrals.filter(r => r.isActive).length}
+                </p>
+              </CardContent>
+            </Card>
             
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-100 dark:border-gray-700">
-              <div className="flex items-center space-x-1">
-                <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">{activeReferrals}</span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">/ {referrals.length}</span>
-              </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                <BadgeCheck className="h-4 w-4 mr-1" />
-                {t('dashboard.activeReferrals')}
-              </div>
-            </div>
+            <Card className="bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-950/40 dark:to-fuchsia-950/40 border-purple-100 dark:border-purple-900">
+              <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center mb-2">
+                  <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('dashboard.earned')}</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-gray-50">
+                  {formatCurrency(totalEarned)}
+                </p>
+              </CardContent>
+            </Card>
           </div>
           
-          {/* Таблица рефералов */}
+          {/* Список рефералов */}
           {referrals.length > 0 ? (
-            <Table>
-              <TableCaption>{t('dashboard.referralsTableCaption')}</TableCaption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('dashboard.user')}</TableHead>
-                  <TableHead>{t('dashboard.email')}</TableHead>
-                  <TableHead>{t('dashboard.joinDate')}</TableHead>
-                  <TableHead>{t('dashboard.status')}</TableHead>
-                  <TableHead>{t('dashboard.earnings')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {referrals.map((referral) => (
-                  <TableRow key={referral.id}>
-                    <TableCell className="font-medium">{referral.username}</TableCell>
-                    <TableCell>{referral.email}</TableCell>
-                    <TableCell>
-                      {new Date(referral.joinDate).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      {referral.hasDeposits ? (
-                        <Badge className="bg-green-500 hover:bg-green-600">
-                          <BadgeCheck className="h-3 w-3 mr-1" />
-                          {t('dashboard.active')}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-amber-600 border-amber-600">
-                          <AlertCircle className="h-3 w-3 mr-1" />
-                          {t('dashboard.pending')}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {referral.hasDeposits && referral.totalDeposits ? (
-                        <span className="text-green-600 dark:text-green-400">
-                          ${(referral.totalDeposits * 0.05).toLocaleString()}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">$0</span>
-                      )}
-                    </TableCell>
+            <div className="rounded-md border dark:border-gray-700 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50 dark:bg-gray-800">
+                    <TableHead>{t('dashboard.username')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('dashboard.email')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{t('dashboard.joinDate')}</TableHead>
+                    <TableHead>{t('dashboard.status')}</TableHead>
+                    <TableHead className="text-right">{t('dashboard.earned')}</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {/* Демонстрационные данные для отображения */}
+                  {[
+                    {
+                      id: 1,
+                      username: 'invest2025',
+                      email: 'invest2025@example.com',
+                      joinDate: new Date(2025, 4, 10),
+                      isActive: true,
+                      earned: 75.25
+                    },
+                    {
+                      id: 2,
+                      username: 'trader555',
+                      email: 'trader555@example.com',
+                      joinDate: new Date(2025, 4, 15),
+                      isActive: true,
+                      earned: 120.50
+                    },
+                    {
+                      id: 3,
+                      username: 'moneymaker',
+                      email: 'moneymaker@example.com',
+                      joinDate: new Date(2025, 4, 20),
+                      isActive: false,
+                      earned: 0
+                    }
+                  ].map((referral) => (
+                    <TableRow key={referral.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                      <TableCell className="font-medium">{referral.username}</TableCell>
+                      <TableCell className="hidden md:table-cell">{referral.email}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{formatDate(referral.joinDate)}</TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          referral.isActive 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
+                        }`}>
+                          {referral.isActive ? t('dashboard.active') : t('dashboard.inactive')}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span className={`font-medium ${
+                          referral.earned > 0 
+                            ? 'text-green-600 dark:text-green-400' 
+                            : 'text-gray-600 dark:text-gray-400'
+                        }`}>
+                          {formatCurrency(referral.earned)}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           ) : (
-            <div className="text-center py-10 border border-dashed rounded-lg">
-              <div className="flex justify-center mb-2">
-                <Users className="h-10 w-10 text-gray-400" />
+            <div className="text-center py-8">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
+                <Users className="h-6 w-6 text-gray-500 dark:text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('dashboard.noReferralsYet')}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-md mx-auto">
-                {t('dashboard.inviteFriendsToEarn')}
+              <h3 className="text-lg font-medium mb-2">{t('dashboard.noReferrals')}</h3>
+              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
+                {t('dashboard.noReferralsDesc')}
               </p>
               <Button 
-                onClick={() => copyToClipboard(referralLink, t('dashboard.referralLinkCopied'))}
+                onClick={shareReferral}
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
               >
-                <Copy className="h-4 w-4 mr-2" />
-                {t('dashboard.copyLink')}
+                <UserPlus className="h-4 w-4 mr-2" />
+                {t('dashboard.inviteFriends')}
               </Button>
             </div>
           )}
-          
-          {/* Промо-материалы */}
-          <div className="mt-6">
-            <h3 className="text-md font-medium mb-4 flex items-center">
-              <ExternalLink className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
-              {t('dashboard.promoMaterials')}
-            </h3>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              <Button 
-                variant="outline"
-                className="border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-                onClick={() => window.open('/promo/banners', '_blank')}
-              >
-                {t('dashboard.banners')}
-              </Button>
-              
-              <Button 
-                variant="outline"
-                className="border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-                onClick={() => window.open('/promo/social', '_blank')}
-              >
-                {t('dashboard.socialMedia')}
-              </Button>
-              
-              <Button 
-                variant="outline"
-                className="border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-                onClick={() => window.open('/promo/email', '_blank')}
-              >
-                {t('dashboard.emailTemplates')}
-              </Button>
-            </div>
-          </div>
         </CardContent>
+        
+        <CardFooter className="flex justify-center border-t p-4">
+          <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+            {t('dashboard.referralProgramNote')}
+          </p>
+        </CardFooter>
       </Card>
     </motion.div>
   );

@@ -120,28 +120,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Проверим, может быть это логин вместо email
       let user = null;
       
-      // Специальная проверка для админа
+      // Ручная проверка на жестко заданные учетные данные админа
       if (username === 'Admin' && password === 'X12345x') {
-        // Создадим или получим администратора
-        let adminUser = await storage.getUserByUsername('Admin');
+        console.log('Входим как админ...');
         
-        if (!adminUser) {
-          // Если админа нет, создаем его
-          const hashedPassword = await bcrypt.hash('X12345x', 10);
-          adminUser = await storage.createUser({
-            username: 'Admin',
-            password: hashedPassword,
-            email: 'admin@tradepo.ru',
-            fullName: 'Administrator',
-            role: 'admin',
-            balance: 0,
-            language: 'ru',
-            referralCode: 'ADMIN',
-            referrerId: null,
-            createdAt: new Date()
-          });
-          console.log('Admin user created:', adminUser.id);
-        }
+        // Создадим админа в памяти
+        const adminUser = {
+          id: 999,
+          username: 'Admin',
+          email: 'admin@tradepo.ru',
+          fullName: 'Administrator',
+          role: 'admin',
+          isAdmin: true,
+          balance: 1000,
+          language: 'ru',
+          referralCode: 'ADMIN',
+          referrerId: null,
+          createdAt: new Date()
+        };
         
         // Генерируем токен для админа
         const token = jwt.sign({ userId: adminUser.id }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
@@ -153,11 +149,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
         
-        // Возвращаем данные админа без пароля
-        const adminObj = adminUser as any;
-        const { password: _, ...adminWithoutPassword } = adminObj;
+        console.log('Вход успешен! Отправляем админ-данные клиенту');
         
-        return res.status(200).json(adminWithoutPassword);
+        // Возвращаем данные админа
+        return res.status(200).json(adminUser);
       }
       
       // Сначала ищем по имени пользователя

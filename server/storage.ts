@@ -146,8 +146,8 @@ export class MemStorage implements IStorage {
     this.createTariff({
       name: "Базовый",
       nameEn: "Basic",
-      dailyRate: 5,
-      minDeposit: 100,
+      dailyRate: 5,     // 5% в день
+      minDeposit: 100,  // от 100$
       referralBonus: 0.1,
       isActive: true
     });
@@ -155,8 +155,8 @@ export class MemStorage implements IStorage {
     this.createTariff({
       name: "Премиум",
       nameEn: "Premium",
-      dailyRate: 10,
-      minDeposit: 500,
+      dailyRate: 7,     // 7% в день
+      minDeposit: 500,  // от 500$
       referralBonus: 0.1,
       isActive: true
     });
@@ -164,8 +164,8 @@ export class MemStorage implements IStorage {
     this.createTariff({
       name: "Элитный",
       nameEn: "Elite",
-      dailyRate: 15,
-      minDeposit: 1000,
+      dailyRate: 10,    // 10% в день
+      minDeposit: 1000, // от 1000$
       referralBonus: 0.1,
       isActive: true
     });

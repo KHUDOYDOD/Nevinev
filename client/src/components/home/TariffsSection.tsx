@@ -116,7 +116,7 @@ export default function TariffsSection() {
                     <p className="text-white/80 text-sm mb-6">{tariff.description || 'Идеальный выбор для начинающих инвесторов'}</p>
                     
                     <div className="flex items-baseline mb-0">
-                      <span className="text-6xl font-extrabold">{tariff.dailyRate}%</span>
+                      <span className="text-6xl font-extrabold animate-pulse animate-duration-slow">{tariff.dailyRate}%</span>
                       <span className="text-white/90 ml-2 text-lg">/ 24ч</span>
                     </div>
                   </div>

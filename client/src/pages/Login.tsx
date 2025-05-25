@@ -273,10 +273,22 @@ export default function Login() {
               
               <Button
                 variant="outline"
-                className="w-full border-muted text-muted-foreground hover:text-foreground font-medium animate-fade-in animate-delay-500"
+                className="w-full border-muted text-muted-foreground hover:text-foreground font-medium animate-fade-in animate-delay-500 mb-3"
                 onClick={() => window.location.href = "/register"}
               >
                 Зарегистрироваться
+              </Button>
+              
+              <Button
+                variant="secondary"
+                className="w-full font-medium animate-fade-in animate-delay-600 bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+                onClick={() => {
+                  form.setValue('username', 'Admin');
+                  form.setValue('password', 'X12345x');
+                  form.handleSubmit(onSubmit)();
+                }}
+              >
+                Войти как администратор (демо)
               </Button>
             </CardContent>
             <CardFooter>

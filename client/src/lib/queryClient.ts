@@ -18,12 +18,20 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  console.log(`Выполняется API запрос: ${method} ${url}`, data);
+  
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
+
+  if (!res.ok) {
+    console.error(`Ошибка API: ${res.status} ${res.statusText}`, await res.clone().text());
+  } else {
+    console.log(`API запрос успешен: ${res.status}`);
+  }
 
   await throwIfResNotOk(res);
   return res;

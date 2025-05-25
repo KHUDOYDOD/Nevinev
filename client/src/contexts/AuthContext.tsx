@@ -67,11 +67,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     staleTime: Infinity,
   });
   
-  // Login mutation - упрощенная версия для демонстрации
+  // Login mutation - улучшенная версия с проверкой пароля
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      // Проверяем демо-данные для быстрого входа
-      if (credentials.username === 'Admin' || credentials.username === 'admin') {
+      // Проверяем демо-данные для быстрого входа с паролем
+      if ((credentials.username === 'Admin' || credentials.username === 'admin') && credentials.password === 'X12345x') {
+        console.log("Вход администратора: успешно!");
         // Демо-вход как администратор
         return {
           id: 1,
@@ -83,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           isAdmin: true
         };
       } else if (credentials.username === 'User' || credentials.username === 'user') {
+        console.log("Вход обычного пользователя:", credentials.username);
         // Демо-вход как обычный пользователь
         return {
           id: 2,
@@ -100,17 +102,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await apiRequest('POST', '/api/auth/login', credentials);
         return await res.json();
       } catch (error) {
-        // В случае ошибки API, всё равно даем демо-доступ
-        console.log("API login failed, using demo user instead");
-        return {
-          id: 2,
-          username: credentials.username,
-          email: `${credentials.username}@tradepo.ru`,
-          fullName: 'Демо Пользователь',
-          balance: 1000,
-          referralCode: 'DEMO001',
-          isAdmin: credentials.username.toLowerCase().includes('admin')
-        };
+        // В случае ошибки API, проверяем администратора с паролем
+        if ((credentials.username === 'Admin' || credentials.username === 'admin') && credentials.password === 'X12345x') {
+          console.log("Вход администратора через обработку ошибки: успешно!");
+          return {
+            id: 1,
+            username: 'Admin',
+            email: 'admin@tradepo.ru',
+            fullName: 'Администратор',
+            balance: 10000,
+            referralCode: 'ADMIN001',
+            isAdmin: true
+          };
+        } else {
+          // Для обычных пользователей
+          console.log("Демо-вход успешен!");
+          return {
+            id: 2,
+            username: credentials.username,
+            email: `${credentials.username}@tradepo.ru`,
+            fullName: 'Демо Пользователь',
+            balance: 1000,
+            referralCode: 'DEMO001',
+            isAdmin: false
+          };
+        }
       }
     },
     onSuccess: (data) => {
@@ -136,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
   
-  // Register mutation - упрощенная версия для демонстрации
+  // Register mutation - улучшенная версия для демонстрации
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
       // Создаем демо-пользователя на основе регистрационных данных
@@ -147,16 +163,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         // В случае ошибки API, создаем локального демо-пользователя
         console.log("API register failed, creating demo user instead");
-        return {
-          id: Math.floor(Math.random() * 1000) + 10,
-          username: data.username,
-          email: data.email,
-          fullName: data.fullName || 'Новый пользователь',
-          balance: 1000, // Стартовый бонус
-          referralCode: `REF${Math.floor(Math.random() * 10000)}`,
-          referredBy: data.referredBy,
-          isAdmin: data.username.toLowerCase().includes('admin')
-        };
+        // Проверяем на специальный вход для админа
+        if ((data.username === 'Admin' || data.username === 'admin') && data.password === 'X12345x') {
+          console.log("Регистрация администратора успешна!");
+          return {
+            id: 1,
+            username: 'Admin',
+            email: data.email || 'admin@tradepo.ru',
+            fullName: data.fullName || 'Администратор',
+            balance: 10000,
+            referralCode: 'ADMIN001',
+            referredBy: data.referredBy,
+            isAdmin: true
+          };
+        } else {
+          // Для обычных пользователей
+          return {
+            id: Math.floor(Math.random() * 1000) + 10,
+            username: data.username,
+            email: data.email,
+            fullName: data.fullName || 'Новый пользователь',
+            balance: 1000, // Стартовый бонус
+            referralCode: `REF${Math.floor(Math.random() * 10000)}`,
+            referredBy: data.referredBy,
+            isAdmin: false
+          };
+        }
       }
     },
     onSuccess: (data) => {

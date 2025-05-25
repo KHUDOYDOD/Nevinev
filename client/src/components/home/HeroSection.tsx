@@ -44,7 +44,7 @@ export default function HeroSection() {
             <div className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm mb-6 border border-white/20 animate-scale-in-fast">
               <div className="flex items-center">
                 <span className="w-2 h-2 bg-secondary rounded-full animate-pulse mr-2"></span>
-                <span className="text-sm font-medium">TRADEPO | Smart Profit System</span>
+                <span className="text-sm font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-purple-300 font-bold">TRADEPO | Smart Profit System</span>
               </div>
             </div>
             
@@ -67,7 +67,7 @@ export default function HeroSection() {
             <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-lg animate-fade-in animate-delay-400">
               Ультрасовременная инвестиционная платформа с фиксированной ставкой до 
               <span className="relative inline-block mx-1">
-                <span className="font-bold text-white animate-blink-shadow">15%</span>
+                <span className="font-bold text-white animate-blink-shadow">10%</span>
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
               </span> 
               ежедневного дохода

@@ -112,11 +112,14 @@ export default function TariffsSection() {
                   <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full -translate-x-12 translate-y-12"></div>
                   
                   <div className="relative z-10">
-                    <h3 className="text-2xl font-bold mb-1">{tariff.name}</h3>
+                    <h3 className="text-2xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-white">{tariff.name}</h3>
                     <p className="text-white/80 text-sm mb-6">{tariff.description || 'Идеальный выбор для начинающих инвесторов'}</p>
                     
-                    <div className="flex items-baseline mb-0">
-                      <span className="text-6xl font-extrabold animate-pulse animate-duration-slow">{tariff.dailyRate}%</span>
+                    <div className="flex items-baseline mb-0 group">
+                      <div className="relative">
+                        <span className="text-6xl font-extrabold animate-pulse animate-duration-slow bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-300">{tariff.dailyRate}%</span>
+                        <div className="absolute -inset-1 blur-xl opacity-30 group-hover:opacity-100 transition duration-500 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl"></div>
+                      </div>
                       <span className="text-white/90 ml-2 text-lg">/ 24ч</span>
                     </div>
                   </div>

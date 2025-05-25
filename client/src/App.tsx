@@ -20,7 +20,7 @@ import AdminDeposits from "@/pages/admin/deposits";
 import AdminWithdrawals from "@/pages/admin/withdrawals";
 import AdminTariffs from "@/pages/admin/tariffs";
 import AdminContent from "@/pages/admin/content";
-import { useAuth } from "@/hooks/use-auth";
+// Теперь используем контекст из @/contexts/AuthContext
 import { useEffect } from "react";
 
 import '@/lib/i18n';

@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 
-type User = {
+export type User = {
   id: number;
   username: string;
   email: string;

@@ -1,291 +1,225 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
 import { 
-  ArrowUpCircle, 
-  ArrowDownCircle, 
-  TrendingUp, 
-  RefreshCw,
-  Clock,
-  Check,
-  X,
-  Search
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { 
+  ArrowDownRight, 
+  ArrowUpRight, 
+  Calendar, 
+  Clock, 
+  CreditCard, 
+  DollarSign, 
+  RefreshCw, 
+  Search, 
+  Users 
+} from "lucide-react";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-// Временные данные для транзакций
-const mockTransactions = [
-  {
-    id: 1,
-    type: "deposit",
-    amount: 1000,
-    status: "completed",
-    description: "Пополнение счета",
-    createdAt: new Date("2025-05-18T14:32:00"),
-    completedAt: new Date("2025-05-18T14:35:00"),
-  },
-  {
-    id: 2,
-    type: "profit",
-    amount: 25,
-    status: "completed",
-    description: "Ежедневная прибыль (Стандарт)",
-    createdAt: new Date("2025-05-19T00:00:00"),
-    completedAt: new Date("2025-05-19T00:00:00"),
-  },
-  {
-    id: 3,
-    type: "profit",
-    amount: 25,
-    status: "completed",
-    description: "Ежедневная прибыль (Стандарт)",
-    createdAt: new Date("2025-05-20T00:00:00"),
-    completedAt: new Date("2025-05-20T00:00:00"),
-  },
-  {
-    id: 4,
-    type: "referral",
-    amount: 100,
-    status: "completed",
-    description: "Реферальный бонус",
-    createdAt: new Date("2025-05-21T15:42:00"),
-    completedAt: new Date("2025-05-21T15:42:00"),
-  },
-  {
-    id: 5,
-    type: "withdraw",
-    amount: 150,
-    status: "pending",
-    description: "Вывод средств",
-    createdAt: new Date("2025-05-22T10:15:00"),
-    completedAt: null,
-  }
-];
-
-interface UserTransactionsProps {
-  limit?: number;
+// Интерфейс для типа транзакции
+interface Transaction {
+  id: number;
+  type: 'deposit' | 'withdraw' | 'profit' | 'referral';
+  amount: number;
+  status: 'pending' | 'completed' | 'rejected';
+  description?: string;
+  createdAt: string;
 }
 
-export default function UserTransactions({ limit }: UserTransactionsProps) {
+interface UserTransactionsProps {
+  transactions: Transaction[];
+}
+
+export default function UserTransactions({ transactions = [] }: UserTransactionsProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  
-  const transactions = mockTransactions;
-  const displayTransactions = limit ? transactions.slice(0, limit) : transactions;
+  const [filter, setFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Фильтрация транзакций
+  const filteredTransactions = transactions.filter(transaction => {
+    const matchesFilter = filter === 'all' || transaction.type === filter;
+    const matchesSearch = searchTerm === '' || 
+      transaction.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.amount.toString().includes(searchTerm);
+    return matchesFilter && matchesSearch;
+  });
+
+  // Сортировка по дате (новые первыми)
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  // Функция для отображения иконки типа транзакции
+  const getTransactionIcon = (type: string) => {
+    switch (type) {
+      case 'deposit':
+        return <ArrowDownRight className="h-4 w-4 text-green-500" />;
+      case 'withdraw':
+        return <ArrowUpRight className="h-4 w-4 text-red-500" />;
+      case 'profit':
+        return <DollarSign className="h-4 w-4 text-blue-500" />;
+      case 'referral':
+        return <Users className="h-4 w-4 text-purple-500" />;
+      default:
+        return <CreditCard className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  // Функция для отображения статуса транзакции
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return (
+          <Badge className="bg-green-500 hover:bg-green-600">
+            {t('dashboard.completed')}
+          </Badge>
+        );
+      case 'pending':
+        return (
+          <Badge variant="outline" className="text-amber-600 border-amber-600">
+            <Clock className="h-3 w-3 mr-1" />
+            {t('dashboard.pending')}
+          </Badge>
+        );
+      case 'rejected':
+        return (
+          <Badge variant="destructive">
+            {t('dashboard.rejected')}
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline">
+            {status}
+          </Badge>
+        );
+    }
+  };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="mb-8"
+      transition={{ duration: 0.5 }}
     >
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t('dashboard.recentTransactions')}</h2>
-        
-        {!limit && (
-          <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-            <div className="relative w-full md:w-64">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-              <Input 
-                placeholder={t('dashboard.searchTransactions')} 
-                className="pl-8 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+      <Card className="shadow-md border dark:border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-xl flex items-center">
+            <RefreshCw className="h-5 w-5 mr-2 text-blue-500" />
+            {t('dashboard.recentTransactions')}
+          </CardTitle>
+          
+          <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t('dashboard.searchTransactions')}
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Button variant="outline" className="border-gray-200 dark:border-gray-700">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              {t('dashboard.refresh')}
-            </Button>
+            
+            <Select
+              value={filter}
+              onValueChange={(value) => setFilter(value)}
+            >
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder={t('dashboard.filterByType')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('dashboard.allTransactions')}</SelectItem>
+                <SelectItem value="deposit">{t('dashboard.deposits')}</SelectItem>
+                <SelectItem value="withdraw">{t('dashboard.withdrawals')}</SelectItem>
+                <SelectItem value="profit">{t('dashboard.profits')}</SelectItem>
+                <SelectItem value="referral">{t('dashboard.referrals')}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        )}
-      </div>
-
-      {transactions.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 text-center">
-          <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-            <RefreshCw className="h-8 w-8 text-gray-500 dark:text-gray-400" />
-          </div>
-          <h3 className="text-xl font-medium mb-2">{t('dashboard.noTransactions')}</h3>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">{t('dashboard.transactionsWillAppearHere')}</p>
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-gray-800 overflow-hidden rounded-xl shadow-md">
-          <div className="overflow-x-auto">
+        </CardHeader>
+        
+        <CardContent>
+          {sortedTransactions.length > 0 ? (
             <Table>
+              <TableCaption>{t('dashboard.recentTransactionsDesc')}</TableCaption>
               <TableHeader>
-                <TableRow className="bg-gray-50 dark:bg-gray-900">
+                <TableRow>
                   <TableHead>{t('dashboard.type')}</TableHead>
                   <TableHead>{t('dashboard.amount')}</TableHead>
-                  <TableHead className="hidden md:table-cell">{t('dashboard.description')}</TableHead>
-                  <TableHead className="hidden md:table-cell">{t('dashboard.date')}</TableHead>
+                  <TableHead>{t('dashboard.date')}</TableHead>
                   <TableHead>{t('dashboard.status')}</TableHead>
+                  <TableHead>{t('dashboard.description')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayTransactions.map((transaction) => (
-                  <motion.tr 
-                    key={transaction.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer"
-                  >
-                    <TableCell>
+                {sortedTransactions.map((transaction) => (
+                  <TableRow key={transaction.id} className="cursor-pointer hover:bg-muted/50">
+                    <TableCell className="font-medium">
                       <div className="flex items-center">
                         {getTransactionIcon(transaction.type)}
-                        <span className="ml-2 font-medium hidden md:inline">
-                          {getTransactionTypeName(transaction.type, t)}
-                        </span>
+                        <span className="ml-2">{t(`dashboard.${transaction.type}`)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className={
+                      transaction.type === 'withdraw' 
+                        ? 'text-red-500 dark:text-red-400' 
+                        : 'text-green-600 dark:text-green-400'
+                    }>
+                      {transaction.type === 'withdraw' ? '-' : '+'}
+                      ${transaction.amount.toLocaleString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Calendar className="h-3.5 w-3.5 mr-1" />
+                        {new Date(transaction.createdAt).toLocaleDateString()}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`font-medium ${getAmountColor(transaction.type)}`}>
-                        {getAmountPrefix(transaction.type)}
-                        {new Intl.NumberFormat('ru-RU', { 
-                          style: 'currency', 
-                          currency: 'USD',
-                          maximumFractionDigits: 2
-                        }).format(transaction.amount)}
-                      </span>
+                      {getStatusBadge(transaction.status)}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-gray-500 dark:text-gray-400">
-                      {transaction.description}
+                    <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                      {transaction.description || '-'}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-gray-500 dark:text-gray-400">
-                      {new Intl.DateTimeFormat('ru-RU', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      }).format(transaction.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={transaction.status} />
-                    </TableCell>
-                  </motion.tr>
+                  </TableRow>
                 ))}
               </TableBody>
             </Table>
-          </div>
-        </div>
-      )}
-      
-      {limit && transactions.length > limit && (
-        <div className="text-center mt-4">
-          <Button variant="outline" className="border-purple-200 text-purple-700 hover:bg-purple-50">
-            {t('dashboard.viewAllTransactions')}
-          </Button>
-        </div>
-      )}
+          ) : (
+            <div className="text-center py-10 border border-dashed rounded-lg">
+              <div className="flex justify-center mb-2">
+                <RefreshCw className="h-10 w-10 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('dashboard.noTransactionsYet')}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                {t('dashboard.transactionsWillAppearHere')}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </motion.div>
-  );
-}
-
-// Вспомогательные функции
-function getTransactionIcon(type: string) {
-  switch (type) {
-    case 'deposit':
-      return (
-        <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-          <ArrowDownCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-        </div>
-      );
-    case 'withdraw':
-      return (
-        <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center">
-          <ArrowUpCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
-        </div>
-      );
-    case 'profit':
-      return (
-        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-          <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-        </div>
-      );
-    case 'referral':
-      return (
-        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-          <RefreshCw className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-        </div>
-      );
-    default:
-      return (
-        <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-          <RefreshCw className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-        </div>
-      );
-  }
-}
-
-function getTransactionTypeName(type: string, t: any) {
-  switch (type) {
-    case 'deposit':
-      return t('dashboard.deposit');
-    case 'withdraw':
-      return t('dashboard.withdraw');
-    case 'profit':
-      return t('dashboard.profit');
-    case 'referral':
-      return t('dashboard.referral');
-    default:
-      return type;
-  }
-}
-
-function getAmountColor(type: string) {
-  switch (type) {
-    case 'deposit':
-    case 'profit':
-    case 'referral':
-      return 'text-green-600 dark:text-green-400';
-    case 'withdraw':
-      return 'text-red-600 dark:text-red-400';
-    default:
-      return 'text-gray-900 dark:text-gray-100';
-  }
-}
-
-function getAmountPrefix(type: string) {
-  switch (type) {
-    case 'deposit':
-    case 'profit':
-    case 'referral':
-      return '+';
-    case 'withdraw':
-      return '-';
-    default:
-      return '';
-  }
-}
-
-function StatusBadge({ status }: { status: string }) {
-  let badgeClass = '';
-  let icon = null;
-  
-  switch (status) {
-    case 'completed':
-      badgeClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      icon = <Check className="w-3 h-3 mr-1" />;
-      break;
-    case 'pending':
-      badgeClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      icon = <Clock className="w-3 h-3 mr-1" />;
-      break;
-    case 'rejected':
-      badgeClass = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      icon = <X className="w-3 h-3 mr-1" />;
-      break;
-    default:
-      badgeClass = 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
-  }
-  
-  return (
-    <Badge className={`flex items-center ${badgeClass}`}>
-      {icon}
-      <span>{status}</span>
-    </Badge>
   );
 }

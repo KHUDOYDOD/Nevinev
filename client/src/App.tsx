@@ -1,61 +1,34 @@
-import { Switch, Route, Redirect, useLocation } from "wouter";
-import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/not-found";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { Router, Switch, Route } from "wouter";
+import { AuthProvider } from "@/contexts/AuthContext";
+
+// Pages
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
-import DashboardIndex from "@/pages/dashboard/index";
-import DashboardDeposits from "@/pages/dashboard/deposits";
-import DashboardTransactions from "@/pages/dashboard/transactions";
-import DashboardCalculator from "@/pages/dashboard/calculator";
-import DashboardReferral from "@/pages/dashboard/referral";
-import DashboardSettings from "@/pages/dashboard/settings";
-import AdminIndex from "@/pages/admin/index";
-import AdminUsers from "@/pages/admin/users";
-import AdminDeposits from "@/pages/admin/deposits";
-import AdminWithdrawals from "@/pages/admin/withdrawals";
-import AdminTariffs from "@/pages/admin/tariffs";
-import AdminContent from "@/pages/admin/content";
-// Теперь используем контекст из @/contexts/AuthContext
-import { useEffect } from "react";
+import Dashboard from "@/pages/Dashboard";
+import AdminPanel from "@/pages/AdminPanel";
 
-import '@/lib/i18n';
-
-function Router() {
-  // Temporarily simplify routing for troubleshooting
-  return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/login" component={Login} />
-      <Route path="/register" component={Register} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
-
-// Импортируем все необходимые провайдеры
-import { AuthProvider } from "@/contexts/AuthContext";
-import { LanguageProvider } from "@/contexts/LanguageContext";
-
-function App() {
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <LanguageProvider>
-          <ThemeProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-            </TooltipProvider>
-          </ThemeProvider>
-        </LanguageProvider>
+        <ThemeProvider>
+          <Router>
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/login" component={Login} />
+              <Route path="/register" component={Register} />
+              <Route path="/dashboard" component={Dashboard} />
+              <Route path="/admin" component={AdminPanel} />
+            </Switch>
+          </Router>
+          <Toaster />
+        </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
 }
-
-export default App;

@@ -245,7 +245,18 @@ export default {
   },
 
   dashboard: {
-      overview: {
+    overview: 'Обзор счета',
+    balance: 'Баланс',
+    activeDeposits: 'Активные депозиты',
+    totalProfit: 'Общая прибыль',
+    deposit: 'Пополнить',
+    withdraw: 'Вывести',
+    deposits: 'Депозиты',
+    transactions: 'Транзакции',
+    calculator: 'Калькулятор',
+    referrals: 'Рефералы',
+    settings: 'Настройки',
+    security: 'Безопасность',
         title: 'Личный кабинет',
         balance: 'Баланс',
         deposit: 'Пополнить',

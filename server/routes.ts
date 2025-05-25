@@ -117,8 +117,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
       
-      // Find user by email
-      const user = await storage.getUserByEmail(email);
+      // Проверим, может быть это логин вместо email
+      let user = null;
+      // Сначала ищем по email
+      user = await storage.getUserByEmail(email);
+      
+      // Если пользователь не найден по email, ищем по имени пользователя
+      if (!user) {
+        user = await storage.getUserByUsername(email);
+      }
+      
       if (!user) {
         return res.status(401).json({ message: "Invalid email or password" });
       }

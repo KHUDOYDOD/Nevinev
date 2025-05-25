@@ -3,49 +3,90 @@
 @tailwind utilities;
 
 :root {
-      --background: 0 0% 100%;
---foreground: 20 14.3% 4.1%;
---muted: 60 4.8% 95.9%;
---muted-foreground: 25 5.3% 44.7%;
---popover: 0 0% 100%;
---popover-foreground: 20 14.3% 4.1%;
---card: 0 0% 100%;
---card-foreground: 20 14.3% 4.1%;
---border: 20 5.9% 90%;
---input: 20 5.9% 90%;
---primary: 207 90% 54%;
---primary-foreground: 211 100% 99%;
---secondary: 60 4.8% 95.9%;
---secondary-foreground: 24 9.8% 10%;
---accent: 60 4.8% 95.9%;
---accent-foreground: 24 9.8% 10%;
---destructive: 0 84.2% 60.2%;
---destructive-foreground: 60 9.1% 97.8%;
---ring: 20 14.3% 4.1%;
---radius: 0.5rem;
-  }
-  .dark {
-      --background: 240 10% 3.9%;
---foreground: 0 0% 98%;
---muted: 240 3.7% 15.9%;
---muted-foreground: 240 5% 64.9%;
---popover: 240 10% 3.9%;
---popover-foreground: 0 0% 98%;
---card: 240 10% 3.9%;
---card-foreground: 0 0% 98%;
---border: 240 3.7% 15.9%;
---input: 240 3.7% 15.9%;
---primary: 207 90% 54%;
---primary-foreground: 211 100% 99%;
---secondary: 240 3.7% 15.9%;
---secondary-foreground: 0 0% 98%;
---accent: 240 3.7% 15.9%;
---accent-foreground: 0 0% 98%;
---destructive: 0 62.8% 30.6%;
---destructive-foreground: 0 0% 98%;
---ring: 240 4.9% 83.9%;
---radius: 0.5rem;
-  }
+  /* Основная светлая тема с яркими цветами */
+  --background: 210 40% 98%; /* Светлый голубоватый фон */
+  --foreground: 222 47% 11%; /* Тёмный текст */
+  
+  --muted: 210 40% 93%; /* Приглушенный фон */
+  --muted-foreground: 215 25% 40%; /* Приглушенный текст */
+  
+  --popover: 0 0% 100%; /* Белый фон для всплывающих окон */
+  --popover-foreground: 222 47% 11%; /* Тёмный текст для всплывающих окон */
+  
+  --card: 0 0% 100%; /* Белый фон карточек */
+  --card-foreground: 222 47% 11%; /* Тёмный текст карточек */
+  
+  --border: 214 32% 91%; /* Светлые границы */
+  --input: 214 32% 91%; /* Границы полей ввода */
+  
+  /* Яркие основные цвета для акцентов */
+  --primary: 224 76% 48%; /* Насыщенный синий */
+  --primary-foreground: 210 40% 98%; /* Светлый текст на основном цвете */
+  
+  --secondary: 156 64% 45%; /* Зеленоватый оттенок */
+  --secondary-foreground: 210 40% 98%; /* Светлый текст на вторичном цвете */
+  
+  --accent: 262 83% 58%; /* Фиолетовый акцент */
+  --accent-foreground: 210 40% 98%; /* Светлый текст на акцентном цвете */
+  
+  /* Цвета состояний */
+  --destructive: 0 84% 60%; /* Красный для ошибок */
+  --destructive-foreground: 210 40% 98%; /* Светлый текст на красном */
+  
+  --success: 142 76% 36%; /* Зеленый для успеха */
+  --success-foreground: 210 40% 98%; /* Светлый текст на зеленом */
+  
+  --warning: 38 92% 50%; /* Оранжевый для предупреждений */
+  --warning-foreground: 210 40% 98%; /* Светлый текст на оранжевом */
+  
+  --ring: 224 76% 48%; /* Цвет фокуса совпадает с основным */
+  
+  /* Радиус скругления */
+  --radius: 0.75rem; /* Более заметное скругление */
+}
+
+.dark {
+  /* Темная тема с теми же акцентными цветами, но темным фоном */
+  --background: 222 47% 11%; /* Темный фон */
+  --foreground: 210 40% 98%; /* Светлый текст */
+  
+  --muted: 223 47% 17%; /* Приглушенный темный фон */
+  --muted-foreground: 215 20% 65%; /* Приглушенный светлый текст */
+  
+  --popover: 222 45% 7%; /* Очень темный фон для всплывающих окон */
+  --popover-foreground: 210 40% 98%; /* Светлый текст */
+  
+  --card: 222 47% 11%; /* Темный фон карточек */
+  --card-foreground: 210 40% 98%; /* Светлый текст карточек */
+  
+  --border: 217 33% 17%; /* Темные границы */
+  --input: 217 33% 17%; /* Границы полей ввода */
+  
+  /* Сохраняем яркие акцентные цвета для контраста */
+  --primary: 224 76% 48%; /* Тот же синий */
+  --primary-foreground: 210 40% 98%; /* Светлый текст */
+  
+  --secondary: 156 64% 45%; /* Тот же зеленоватый */
+  --secondary-foreground: 210 40% 98%; /* Светлый текст */
+  
+  --accent: 262 83% 58%; /* Тот же фиолетовый */
+  --accent-foreground: 210 40% 98%; /* Светлый текст */
+  
+  /* Цвета состояний немного приглушены для темной темы */
+  --destructive: 0 84% 60%; /* Тот же красный */
+  --destructive-foreground: 210 40% 98%; /* Светлый текст */
+  
+  --success: 142 76% 36%; /* Тот же зеленый */
+  --success-foreground: 210 40% 98%; /* Светлый текст */
+  
+  --warning: 38 92% 50%; /* Тот же оранжевый */
+  --warning-foreground: 210 40% 98%; /* Светлый текст */
+  
+  --ring: 224 76% 60%; /* Немного ярче в темной теме */
+  
+  /* Тот же радиус скругления */
+  --radius: 0.75rem;
+}
 
 @layer base {
   * {
@@ -55,4 +96,202 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+}
+
+/* Анимации для элементов интерфейса */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Классы анимаций */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.animate-slide-up {
+  animation: slideInUp 0.5s ease forwards;
+}
+
+.animate-slide-right {
+  animation: slideInRight 0.5s ease forwards;
+}
+
+.animate-slide-left {
+  animation: slideInLeft 0.5s ease forwards;
+}
+
+.animate-pulse {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, 
+    rgba(255,255,255,0) 0%, 
+    rgba(255,255,255,0.2) 50%, 
+    rgba(255,255,255,0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.animate-float {
+  animation: float 3s infinite ease-in-out;
+}
+
+.animate-rotate {
+  animation: rotate 8s linear infinite;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s ease forwards;
+}
+
+.animate-bounce {
+  animation: bounce 2s infinite ease-in-out;
+}
+
+/* Классы для последовательной анимации */
+.animate-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animate-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animate-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animate-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animate-delay-500 {
+  animation-delay: 500ms;
+}
+
+/* Современные стили карточек */
+.gradient-card {
+  background: linear-gradient(135deg, 
+    hsl(var(--primary) / 0.8) 0%, 
+    hsl(var(--accent) / 0.8) 100%
+  );
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: all 0.3s ease;
+}
+
+.gradient-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Современные кнопки */
+.modern-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  z-index: 1;
+  border-radius: var(--radius);
+}
+
+.modern-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.5s ease;
+  z-index: -1;
+}
+
+.modern-button:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Стили для карточек тарифов */
+.tariff-card {
+  transition: all 0.3s ease;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.tariff-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Эффект стеклянного фона */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.dark .glassmorphism {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }

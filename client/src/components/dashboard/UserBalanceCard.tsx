@@ -269,19 +269,20 @@ const UserBalanceCard = ({ user }) => {
               >
                 {t('common.overview')}
               </TabsTrigger>
-            <TabsTrigger
-              value="deposit"
-              className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
-            >
-              {t('deposit.title')}
-            </TabsTrigger>
-            <TabsTrigger
-              value="withdraw"
-              className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
-            >
-              {t('withdraw.title')}
-            </TabsTrigger>
-          </TabsList>
+              <TabsTrigger
+                value="deposit"
+                className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+              >
+                {t('deposit.title')}
+              </TabsTrigger>
+              <TabsTrigger
+                value="withdraw"
+                className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+              >
+                {t('withdraw.title')}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
         
         <AnimatePresence mode="wait">

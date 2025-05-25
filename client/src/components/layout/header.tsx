@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/hooks/use-language";
 import { Button } from "@/components/ui/button";
 import { LanguageSelector } from "@/components/ui/language-selector";
@@ -103,69 +103,98 @@ export function Header() {
         </div>
       </Container>
       
-      {/* Mobile menu */}
+      {/* Mobile menu - улучшенная версия */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white py-4 px-4 border-t border-gray-100">
-          <div className="flex justify-end mb-4">
-            <Button variant="ghost" size="icon" onClick={toggleMobileMenu}>
-              <X className="h-6 w-6" />
-            </Button>
-          </div>
-          <nav className="flex flex-col space-y-4">
-            <Link 
-              href="/" 
-              className="font-medium text-gray-600 hover:text-primary transition py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {t('nav.home')}
-            </Link>
-            <Link 
-              href="/#tariffs" 
-              className="font-medium text-gray-600 hover:text-primary transition py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {t('nav.tariffs')}
-            </Link>
-            <Link 
-              href="/#how-it-works" 
-              className="font-medium text-gray-600 hover:text-primary transition py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {t('nav.how_it_works')}
-            </Link>
-            <Link 
-              href="/#reviews" 
-              className="font-medium text-gray-600 hover:text-primary transition py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {t('nav.reviews')}
-            </Link>
-            <Link 
-              href="/#contacts" 
-              className="font-medium text-gray-600 hover:text-primary transition py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {t('nav.contacts')}
-            </Link>
+        <div className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fade-in">
+          <div className="bg-white/95 dark:bg-gray-900/95 h-full max-w-xs w-full ml-auto py-6 px-6 flex flex-col relative animate-slide-in-right shadow-xl">
+            <div className="flex justify-between items-center mb-8">
+              <div className="relative">
+                <span className="font-extrabold text-2xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">TRADEPO</span>
+                <div className="absolute -inset-1 blur-lg opacity-30 bg-gradient-to-r from-primary/50 to-secondary/50 rounded-xl -z-10"></div>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={toggleMobileMenu}
+                className="text-foreground/80 hover:text-primary hover:bg-primary/10 rounded-full transition-all duration-300"
+              >
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
             
-            {isAuthenticated ? (
+            <nav className="flex flex-col space-y-2 flex-1">
               <Link 
-                href="/dashboard"
-                className="font-medium text-primary hover:text-primary/80 transition py-2"
+                href="/" 
+                className={`font-medium px-4 py-3 rounded-xl transition-all duration-300 ${
+                  location === '/' ? 'bg-primary/10 text-primary' : 'text-foreground/80 hover:bg-primary/5 hover:text-primary'
+                } group animate-fade-in animate-delay-100`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {t('nav.dashboard')}
+                <div className="flex items-center">
+                  <span className="relative group-hover:translate-x-1 transition-transform duration-300">Главная</span>
+                  {location === '/' && (
+                    <span className="ml-2 w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  )}
+                </div>
               </Link>
-            ) : (
               <Link 
-                href="/login"
-                className="font-medium text-primary hover:text-primary/80 transition py-2"
+                href="/#tariffs" 
+                className="font-medium px-4 py-3 rounded-xl text-foreground/80 hover:bg-primary/5 hover:text-primary transition-all duration-300 group animate-fade-in animate-delay-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {t('nav.login')}
+                <span className="relative group-hover:translate-x-1 transition-transform duration-300">Тарифы</span>
               </Link>
-            )}
-          </nav>
+              <Link 
+                href="/#how-it-works" 
+                className="font-medium px-4 py-3 rounded-xl text-foreground/80 hover:bg-primary/5 hover:text-primary transition-all duration-300 group animate-fade-in animate-delay-300"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="relative group-hover:translate-x-1 transition-transform duration-300">Как это работает</span>
+              </Link>
+              <Link 
+                href="/#reviews" 
+                className="font-medium px-4 py-3 rounded-xl text-foreground/80 hover:bg-primary/5 hover:text-primary transition-all duration-300 group animate-fade-in animate-delay-400"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="relative group-hover:translate-x-1 transition-transform duration-300">Отзывы</span>
+              </Link>
+              <Link 
+                href="/#contacts" 
+                className="font-medium px-4 py-3 rounded-xl text-foreground/80 hover:bg-primary/5 hover:text-primary transition-all duration-300 group animate-fade-in animate-delay-500"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span className="relative group-hover:translate-x-1 transition-transform duration-300">Контакты</span>
+              </Link>
+            </nav>
+            
+            <div className="mt-auto pt-6 border-t border-gray-100 dark:border-gray-800 animate-fade-in animate-delay-600">
+              {isAuthenticated ? (
+                <Button
+                  className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-bold rounded-xl shadow-md shadow-primary/20 hover:shadow-primary/30 transition-all duration-300 py-6"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    window.location.href = "/dashboard";
+                  }}
+                >
+                  Личный кабинет
+                </Button>
+              ) : (
+                <Button
+                  className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-bold rounded-xl shadow-md shadow-primary/20 hover:shadow-primary/30 transition-all duration-300 py-6"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    window.location.href = "/login";
+                  }}
+                >
+                  Войти
+                </Button>
+              )}
+              
+              <div className="flex justify-center mt-4">
+                <LanguageSelector />
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </header>

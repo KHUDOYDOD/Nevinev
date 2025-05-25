@@ -38,7 +38,7 @@ function Router() {
 }
 
 // Импортируем все необходимые провайдеры
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
 function App() {

@@ -457,13 +457,13 @@ const UserDeposits = ({ deposits = [] }) => {
         </p>
         <div className="flex items-center mt-1 text-green-600 dark:text-green-400 text-sm">
           <Sparkles className="w-4 h-4 mr-1" />
-          <span>{t('deposit.workingCapital')}</span>
+          <span>Рабочий капитал</span>
         </div>
       </motion.div>
       
       <motion.div variants={itemVariants} className="bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-950/30 dark:to-fuchsia-950/30 p-4 rounded-xl">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-gray-600 dark:text-gray-300">{t('deposit.projectedProfit')}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Прогнозируемая прибыль</p>
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white flex items-center justify-center shadow-lg">
             <BarChart3 className="w-4 h-4" />
           </div>
@@ -477,7 +477,7 @@ const UserDeposits = ({ deposits = [] }) => {
         </p>
         <div className="flex items-center mt-1 text-purple-600 dark:text-purple-400 text-sm">
           <TrendingUp className="w-4 h-4 mr-1" />
-          <span>{t('deposit.nextMonth')}</span>
+          <span>В следующем месяце</span>
         </div>
       </motion.div>
     </motion.div>
@@ -493,7 +493,7 @@ const UserDeposits = ({ deposits = [] }) => {
             transition={{ duration: 0.5 }}
             className="text-2xl font-bold text-gray-900 dark:text-white"
           >
-            {t('dashboard.deposits')}
+            Депозиты
           </motion.h2>
           
           <div className="flex items-center gap-3">
@@ -502,13 +502,13 @@ const UserDeposits = ({ deposits = [] }) => {
                 value="active"
                 className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
               >
-                {t('deposit.active')}
+                Активные
               </TabsTrigger>
               <TabsTrigger
                 value="plans"
                 className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
               >
-                {t('deposit.plans')}
+                Тарифы
               </TabsTrigger>
             </TabsList>
             

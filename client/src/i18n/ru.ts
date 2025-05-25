@@ -510,7 +510,7 @@ export default {
     minAmount: 'Мин. сумма ($)',
     profitability: 'Доходность (%)',
     refBonus: 'Реф. бонус (%)',
-    isActive: 'Активен';
+    isActive: 'Активен',
     contentManagement: 'Управление контентом',
     mainPageTitle: 'Заголовок главной страницы',
     mainPageSubtitle: 'Подзаголовок главной страницы',

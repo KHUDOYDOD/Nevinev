@@ -193,35 +193,35 @@ export default function UserDashboard() {
   const navItems = [
     {
       id: "balance",
-      label: t('dashboard.balance'),
+      label: "Баланс",
       icon: <Wallet className="w-5 h-5" />,
       badge: null,
       color: "from-blue-500 to-indigo-600"
     },
     {
       id: "deposits",
-      label: t('dashboard.deposits'),
+      label: "Депозиты",
       icon: <PiggyBank className="w-5 h-5" />,
       badge: depositsData?.length || null,
       color: "from-emerald-500 to-green-600"
     },
     {
       id: "transactions",
-      label: t('dashboard.transactions'),
+      label: "Транзакции",
       icon: <History className="w-5 h-5" />,
       badge: transactionsData?.length > 5 ? 5 : transactionsData?.length || null,
       color: "from-amber-500 to-orange-600"
     },
     {
       id: "referrals",
-      label: t('dashboard.referrals'),
+      label: "Рефералы",
       icon: <UserPlus className="w-5 h-5" />,
       badge: referralsData?.length || null,
       color: "from-purple-500 to-fuchsia-600"
     },
     {
       id: "settings",
-      label: t('dashboard.settings'),
+      label: "Настройки",
       icon: <Settings className="w-5 h-5" />,
       badge: null,
       color: "from-gray-500 to-gray-600"

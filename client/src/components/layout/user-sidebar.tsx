@@ -86,7 +86,7 @@ export function UserSidebar() {
           <Link href="/admin">
             <a className="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
               <ShieldCheck className="h-5 w-5" />
-              <span>{t('common.admin')}</span>
+              <span>Админ панель</span>
             </a>
           </Link>
         )}

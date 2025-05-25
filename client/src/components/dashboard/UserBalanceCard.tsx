@@ -206,7 +206,13 @@ const UserBalanceCard = ({ user }) => {
     >
       <motion.div variants={itemVariants} className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-4 rounded-xl">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-gray-600 dark:text-gray-300">{t('stats.totalBalance')}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            {user?.language === 'en' ? 'Total Balance' : 
+            user?.language === 'tj' ? 'Баланси умумӣ' : 
+            user?.language === 'kz' ? 'Жалпы баланс' : 
+            user?.language === 'uz' ? 'Umumiy balans' : 
+            'Общий баланс'}
+          </p>
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-lg">
             <Wallet className="w-4 h-4" />
           </div>

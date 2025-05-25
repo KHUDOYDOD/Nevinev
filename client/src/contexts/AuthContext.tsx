@@ -67,41 +67,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     staleTime: Infinity,
   });
   
-  // Login mutation - улучшенная версия с проверкой пароля
+  // Login mutation - упрощенная версия для демо
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      // Демо-вход для различных пользователей
-      console.log("Вход обычного пользователя:", credentials.username);
-
-      // Проверяем админский аккаунт
-      if ((credentials.username === 'Admin' || credentials.username === 'admin') && credentials.password === 'X12345x') {
-        console.log("Вход администратора: успешно!");
-        // Демо-вход как администратор
-        return {
-          id: 1,
-          username: 'Admin',
-          email: 'admin@tradepo.ru',
-          fullName: 'Администратор',
-          balance: 10000,
-          referralCode: 'ADMIN001',
-          isAdmin: true
-        };
-      } 
-      
-      // Проверка демо-пользователя
-      if ((credentials.username === 'User' || credentials.username === 'user') && credentials.password === 'X12345x') {
-        console.log("Вход обычного пользователя: успешно!");
-        // Демо-вход как обычный пользователь
-        return {
-          id: 2,
-          username: 'User',
-          email: 'user@tradepo.ru',
-          fullName: 'Тестовый Пользователь',
-          balance: 1500,
-          referralCode: 'USER001',
-          isAdmin: false
-        };
-      }
+      // Демо-вход для всех пользователей
+      console.log("Вход пользователя:", credentials.username);
       
       // Обычный демо-пользователь для любых учетных данных
       console.log("Демо-вход успешен!");
@@ -122,12 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: "Добро пожаловать в систему TRADEPO",
       });
       
-      // Redirect based on role
-      if (data.isAdmin) {
-        navigate("/admin");
-      } else {
-        navigate("/dashboard");
-      }
+      // Всегда перенаправляем в личный кабинет
+      navigate("/dashboard");
     },
     onError: (error: any) => {
       toast({
@@ -138,28 +104,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
   
-  // Register mutation - улучшенная версия для демонстрации
+  // Register mutation - упрощенная версия для демо
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
       // Создаем демо-пользователя на основе регистрационных данных
       console.log("Регистрация пользователя:", data.username);
       
-      // Проверяем на специальный вход для админа
-      if ((data.username === 'Admin' || data.username === 'admin') && data.password === 'X12345x') {
-        console.log("Регистрация администратора успешна!");
-        return {
-          id: 1,
-          username: 'Admin',
-          email: data.email || 'admin@tradepo.ru',
-          fullName: data.fullName || 'Администратор',
-          balance: 10000,
-          referralCode: 'ADMIN001',
-          referredBy: data.referredBy,
-          isAdmin: true
-        };
-      } 
-      
-      // Для обычных пользователей
+      // Для всех пользователей создаем обычный аккаунт
       return {
         id: Math.floor(Math.random() * 1000) + 10,
         username: data.username,
@@ -245,6 +196,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth() {
+export const useAuth = () => {
   return useContext(AuthContext);
 }

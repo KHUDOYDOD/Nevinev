@@ -80,15 +80,10 @@ export default function Login() {
     }
   };
 
-  // Демо-кнопки для быстрого входа
-  const handleDemoLogin = (type: 'admin' | 'user') => {
-    if (type === 'admin') {
-      form.setValue('username', 'Admin');
-      form.setValue('password', 'X12345x');
-    } else {
-      form.setValue('username', 'User');
-      form.setValue('password', 'X12345x');
-    }
+  // Функция для быстрого входа
+  const handleQuickLogin = () => {
+    form.setValue('username', 'Пользователь');
+    form.setValue('password', 'demo123');
     form.handleSubmit(onSubmit)();
   };
 
@@ -485,14 +480,14 @@ export default function Login() {
                       <Button
                         type="button"
                         className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white"
-                        onClick={() => handleDemoLogin('user')}
+                        onClick={handleQuickLogin}
                       >
                         Демо-аккаунт
                       </Button>
                     </motion.div>
                   </div>
                   
-                  {/* Демо-вход администратора */}
+                  {/* Демо-вход */}
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -501,9 +496,9 @@ export default function Login() {
                     <Button
                       type="button"
                       className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white flex items-center justify-center"
-                      onClick={() => handleDemoLogin('admin')}
+                      onClick={handleQuickLogin}
                     >
-                      <span className="mr-2">👑</span> Демо-вход администратора
+                      <span className="mr-2">👤</span> Быстрый демо-вход
                     </Button>
                   </motion.div>
                 </form>

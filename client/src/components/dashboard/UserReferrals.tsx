@@ -1,73 +1,126 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { 
-  UserPlus, 
-  DollarSign, 
-  Users, 
   Copy, 
-  CheckCircle2, 
-  Share2,
-  CalendarDays,
-  PieChart,
-  ArrowUpRight,
-  HelpCircle
+  Check, 
+  Share2, 
+  UserPlus, 
+  BadgeDollarSign, 
+  Users,
+  TrendingUp,
+  Award,
+  Sparkles,
+  Facebook,
+  Twitter,
+  Mail,
+  Telegram,
+  Link
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-// Анимации для карточек
-const cardVariants = {
+// Анимации
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
+  visible: {
     opacity: 1,
     y: 0,
     transition: {
-      delay: i * 0.1,
-      duration: 0.4,
-      ease: [0.22, 1, 0.36, 1]
+      type: "spring",
+      stiffness: 100,
+      damping: 15
     }
-  })
+  }
 };
 
-interface UserReferralsProps {
-  referrals: any[];
-  user: any;
-}
-
-export default function UserReferrals({ referrals = [], user }: UserReferralsProps) {
+// Компонент для реферальной программы
+const UserReferrals = ({ referrals = [], user = {} }) => {
   const { t } = useTranslation();
-  const { toast } = useToast();
-  const [isCopied, setIsCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState("info");
-
-  // Реферальный код пользователя
-  const referralCode = user?.referralCode || "ABC123";
-  const referralLink = `${window.location.origin}/?ref=${referralCode}`;
-
+  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  
+  // Генерируем реферальную ссылку на основе данных пользователя
+  const referralLink = user?.referralCode 
+    ? `${window.location.origin}/?ref=${user.referralCode}` 
+    : `${window.location.origin}/?ref=sample`;
+  
+  // Мок-данные рефералов, если они не переданы
+  const mockReferrals = [
+    {
+      id: 1,
+      username: "user1",
+      registeredAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
+      hasDeposits: true,
+      depositsAmount: 1000,
+      earned: 50
+    },
+    {
+      id: 2,
+      username: "investor365",
+      registeredAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+      hasDeposits: true,
+      depositsAmount: 500,
+      earned: 25
+    },
+    {
+      id: 3,
+      username: "trader2025",
+      registeredAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
+      hasDeposits: false,
+      depositsAmount: 0,
+      earned: 0
+    }
+  ];
+  
+  // Используем переданные рефералы или мок-данные
+  const allReferrals = referrals.length > 0 ? referrals : mockReferrals;
+  
+  // Получаем активных рефералов (с депозитами)
+  const activeReferrals = allReferrals.filter(ref => ref.hasDeposits);
+  
+  // Рассчитываем общую сумму заработка
+  const totalEarned = allReferrals.reduce((total, ref) => total + (ref.earned || 0), 0);
+  
+  // Общая сумма депозитов рефералов
+  const totalDeposits = allReferrals.reduce((total, ref) => total + (ref.depositsAmount || 0), 0);
+  
+  // Копирование реферальной ссылки
+  const copyReferralLink = () => {
+    navigator.clipboard.writeText(referralLink);
+    setCopied(true);
+    toast({
+      title: t('success'),
+      description: t('referral.linkCopied'),
+      variant: "default"
+    });
+    
+    setTimeout(() => setCopied(false), 2000);
+  };
+  
   // Форматирование валюты
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount) => {
     return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
       currency: 'USD',
@@ -75,45 +128,34 @@ export default function UserReferrals({ referrals = [], user }: UserReferralsPro
       maximumFractionDigits: 0
     }).format(amount);
   };
-
+  
   // Форматирование даты
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
+    return date.toLocaleDateString('ru-RU', { 
+      day: 'numeric', 
+      month: 'long', 
       year: 'numeric'
     });
   };
-
-  // Обработчик копирования реферальной ссылки
-  const handleCopyReferralLink = () => {
-    navigator.clipboard.writeText(referralLink);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
-    toast({
-      title: t('referrals.copied'),
-      description: t('referrals.linkCopied'),
-    });
-  };
-
-  // Обработчик поделиться в социальных сетях
-  const handleShare = (platform: string) => {
+  
+  // Обработчик для шаринга в соцсети
+  const handleShare = (platform) => {
     let shareUrl = '';
-    const message = t('referrals.shareMessage');
+    const text = t('referral.shareText');
     
     switch (platform) {
-      case 'telegram':
-        shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(message)}`;
-        break;
-      case 'whatsapp':
-        shareUrl = `https://wa.me/?text=${encodeURIComponent(message + ' ' + referralLink)}`;
-        break;
       case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent(message)}`;
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent(text)}`;
         break;
       case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(referralLink)}`;
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
+        break;
+      case 'telegram':
+        shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
+        break;
+      case 'email':
+        shareUrl = `mailto:?subject=${encodeURIComponent(t('referral.emailSubject'))}&body=${encodeURIComponent(text + ' ' + referralLink)}`;
         break;
       default:
         return;
@@ -121,403 +163,517 @@ export default function UserReferrals({ referrals = [], user }: UserReferralsPro
     
     window.open(shareUrl, '_blank');
   };
-
-  // Расчет общего заработка с рефералов
-  const totalEarnings = referrals.reduce((sum, referral) => sum + (referral.earnings || 0), 0);
-
-  // Компонент статистики
-  const ReferralStats = () => {
-    // Примеры данных для визуализации
-    const referralsCount = referrals.length;
-    const activeReferrals = referrals.filter(ref => ref.hasDeposits).length;
-    const activePercentage = referralsCount > 0 ? (activeReferrals / referralsCount) * 100 : 0;
-    
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-500" />
-              {t('referrals.totalReferrals')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{referralsCount}</div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {t('referrals.peopleJoined')}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-500" />
-              {t('referrals.totalEarnings')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-              {formatCurrency(totalEarnings)}
-            </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {t('referrals.earnings')}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <PieChart className="h-5 w-5 text-purple-500" />
-              {t('referrals.activeReferrals')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-between items-baseline mb-1">
-              <div className="text-3xl font-bold">{activeReferrals}/{referralsCount}</div>
-              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                {Math.round(activePercentage)}%
-              </div>
-            </div>
-            <Progress value={activePercentage} className="h-2" />
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              {t('referrals.activeDescription')}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  };
-
-  // Компонент для информации о реферальной программе
-  const ReferralInfo = () => (
-    <div className="space-y-6">
-      <Card className="border-none shadow-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-xl">{t('referrals.referralProgram')}</CardTitle>
-          <CardDescription className="text-white/80">
-            {t('referrals.inviteFriends')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div>
-              <p className="text-sm text-white/80 mb-2">{t('referrals.yourReferralLink')}:</p>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Input
-                    value={referralLink}
-                    readOnly
-                    className="pr-10 bg-white/10 border-white/20 text-white"
-                  />
-                </div>
-                <Button 
-                  variant="secondary" 
-                  className="shrink-0 bg-white text-indigo-600 hover:bg-white/90 hover:text-indigo-700"
-                  onClick={handleCopyReferralLink}
-                >
-                  {isCopied ? (
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                  ) : (
-                    <Copy className="h-4 w-4 mr-2" />
-                  )}
-                  {isCopied ? t('common.copied') : t('common.copy')}
-                </Button>
-              </div>
-            </div>
-            
-            <div>
-              <p className="text-sm text-white/80 mb-2">{t('referrals.shareWith')}:</p>
-              <div className="flex gap-2">
-                <Button 
-                  variant="secondary" 
-                  size="icon"
-                  className="bg-[#229ED9] hover:bg-[#229ED9]/90 text-white"
-                  onClick={() => handleShare('telegram')}
-                >
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.568 8.16c-.18 1.896-.96 6.504-1.356 8.628-.168.9-.504 1.2-.816 1.236-.696.06-1.224-.42-1.896-.9-1.056-.72-1.656-1.176-2.676-1.896-1.188-.84-.42-1.296.264-2.04.18-.2 3.252-2.976 3.312-3.228a.24.24 0 0 0-.06-.216c-.072-.06-.168-.036-.252-.024-.108.024-1.788 1.14-5.064 3.348-.48.324-.912.492-1.296.48-.432-.012-1.248-.24-1.86-.444-.756-.24-1.344-.372-1.296-.792.024-.216.324-.432.888-.66 3.504-1.524 5.832-2.532 6.996-3.012 3.336-1.392 4.02-1.632 4.476-1.632.108 0 .324.024.468.144.12.096.156.228.168.324-.012.072.012.288 0 .456z" />
-                  </svg>
-                </Button>
-                <Button 
-                  variant="secondary" 
-                  size="icon"
-                  className="bg-[#25D366] hover:bg-[#25D366]/90 text-white"
-                  onClick={() => handleShare('whatsapp')}
-                >
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                  </svg>
-                </Button>
-                <Button 
-                  variant="secondary" 
-                  size="icon"
-                  className="bg-[#1877F2] hover:bg-[#1877F2]/90 text-white"
-                  onClick={() => handleShare('facebook')}
-                >
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                </Button>
-                <Button 
-                  variant="secondary" 
-                  size="icon"
-                  className="bg-[#1DA1F2] hover:bg-[#1DA1F2]/90 text-white"
-                  onClick={() => handleShare('twitter')}
-                >
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
-                  </svg>
-                </Button>
-                <Button 
-                  variant="secondary" 
-                  className="flex-1 bg-white text-indigo-600 hover:bg-white/90 hover:text-indigo-700"
-                  onClick={() => handleShare('telegram')}
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  {t('referrals.share')}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/3 -translate-y-1/2 z-0"></div>
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full -translate-x-1/2 translate-y-1/2 z-0"></div>
-      </Card>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <motion.div
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-          custom={1}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <UserPlus className="h-5 w-5 text-purple-500" />
-                {t('referrals.howItWorks')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center">
-                  1
-                </div>
-                <div>
-                  <h3 className="font-medium mb-1">{t('referrals.step1Title')}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('referrals.step1Description')}</p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center">
-                  2
-                </div>
-                <div>
-                  <h3 className="font-medium mb-1">{t('referrals.step2Title')}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('referrals.step2Description')}</p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center">
-                  3
-                </div>
-                <div>
-                  <h3 className="font-medium mb-1">{t('referrals.step3Title')}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('referrals.step3Description')}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-        
-        <motion.div
-          variants={cardVariants}
-          initial="hidden"
-          animate="visible"
-          custom={2}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-green-500" />
-                {t('referrals.rewardRates')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-medium">{t('referrals.level')} 1</h3>
-                    <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                      7%
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('referrals.level1Description')}
-                  </p>
-                </div>
-                
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-medium">{t('referrals.level')} 2</h3>
-                    <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                      3%
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('referrals.level2Description')}
-                  </p>
-                </div>
-                
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-medium">{t('referrals.level')} 3</h3>
-                    <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
-                      1%
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('referrals.level3Description')}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="border-t pt-4 flex justify-center">
-              <Button variant="outline" className="text-sm">
-                <HelpCircle className="h-4 w-4 mr-2" />
-                {t('referrals.learnMore')}
-              </Button>
-            </CardFooter>
-          </Card>
-        </motion.div>
-      </div>
-    </div>
-  );
-
-  // Компонент для списка рефералов
-  const ReferralsList = () => (
+  
+  // Компонент для статистики
+  const StatsCards = () => (
     <motion.div
-      variants={cardVariants}
+      variants={containerVariants}
       initial="hidden"
       animate="visible"
-      custom={0}
+      className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
     >
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="h-5 w-5 text-blue-500" />
-            {t('referrals.yourReferrals')}
-          </CardTitle>
-          <CardDescription>
-            {t('referrals.yourReferralsDescription')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {referrals.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('common.user')}</TableHead>
-                  <TableHead>{t('referrals.date')}</TableHead>
-                  <TableHead>{t('referrals.status')}</TableHead>
-                  <TableHead className="text-right">{t('referrals.earnings')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {referrals.map((referral, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">
-                      {referral.username || `User-${referral.id}`}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(referral.createdAt || new Date().toISOString())}
-                    </TableCell>
-                    <TableCell>
-                      {referral.hasDeposits ? (
-                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                          {t('referrals.active')}
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-gray-500 dark:text-gray-400">
-                          {t('referrals.registered')}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span className="font-medium text-green-600 dark:text-green-400">
-                        {formatCurrency(referral.earnings || 0)}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-8">
-              <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
-                <Users className="h-6 w-6 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">{t('referrals.noReferralsYet')}</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4 max-w-md mx-auto">
-                {t('referrals.noReferralsDescription')}
-              </p>
-              <Button
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                onClick={() => setActiveTab("info")}
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                {t('referrals.startInviting')}
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <motion.div variants={itemVariants} className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 p-4 rounded-xl">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-gray-600 dark:text-gray-300">{t('referral.totalReferrals')}</p>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center shadow-lg">
+            <Users className="w-4 h-4" />
+          </div>
+        </div>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white">{allReferrals.length}</p>
+        <div className="flex items-center mt-1 text-indigo-600 dark:text-indigo-400 text-sm">
+          <UserPlus className="w-4 h-4 mr-1" />
+          <span>{activeReferrals.length} {t('referral.active')}</span>
+        </div>
+      </motion.div>
+      
+      <motion.div variants={itemVariants} className="bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-950/30 dark:to-fuchsia-950/30 p-4 rounded-xl">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-gray-600 dark:text-gray-300">{t('referral.totalEarned')}</p>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white flex items-center justify-center shadow-lg">
+            <BadgeDollarSign className="w-4 h-4" />
+          </div>
+        </div>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(totalEarned)}</p>
+        <div className="flex items-center mt-1 text-purple-600 dark:text-purple-400 text-sm">
+          <TrendingUp className="w-4 h-4 mr-1" />
+          <span>+{formatCurrency(totalEarned * 0.1)} {t('common.thisWeek')}</span>
+        </div>
+      </motion.div>
+      
+      <motion.div variants={itemVariants} className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-4 rounded-xl">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-gray-600 dark:text-gray-300">{t('referral.totalInvested')}</p>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-lg">
+            <Award className="w-4 h-4" />
+          </div>
+        </div>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(totalDeposits)}</p>
+        <div className="flex items-center mt-1 text-amber-600 dark:text-amber-400 text-sm">
+          <Sparkles className="w-4 h-4 mr-1" />
+          <span>{t('referral.byFriends')}</span>
+        </div>
+      </motion.div>
     </motion.div>
   );
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{t('dashboard.referrals')}</h2>
-        <Button
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-          onClick={handleCopyReferralLink}
-        >
-          {isCopied ? (
-            <CheckCircle2 className="h-4 w-4 mr-2" />
-          ) : (
-            <Copy className="h-4 w-4 mr-2" />
-          )}
-          {t('referrals.copyLink')}
-        </Button>
+  
+  // Компонент для пустого состояния
+  const EmptyState = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="text-center py-10"
+    >
+      <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+        <UserPlus className="h-8 w-8 text-gray-400" />
       </div>
-
-      {/* Статистика */}
-      <ReferralStats />
-
-      {/* Вкладки */}
-      <Tabs defaultValue="info" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="info">
-            {t('referrals.information')}
-          </TabsTrigger>
-          <TabsTrigger value="list">
-            {t('referrals.list')}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="info">
-          <ReferralInfo />
-        </TabsContent>
-
-        <TabsContent value="list">
-          <ReferralsList />
-        </TabsContent>
+      <h3 className="text-lg font-semibold mb-1">
+        {t('referral.noReferrals')}
+      </h3>
+      <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">
+        {t('referral.noReferralsDesc')}
+      </p>
+      <Button 
+        variant="default" 
+        onClick={() => setActiveTab("invite")}
+        className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
+      >
+        <Share2 className="h-4 w-4 mr-2" />
+        {t('referral.inviteFriends')}
+      </Button>
+    </motion.div>
+  );
+  
+  return (
+    <div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="flex justify-between items-center mb-6">
+          <motion.h2 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-2xl font-bold text-gray-900 dark:text-white"
+          >
+            {t('dashboard.referrals')}
+          </motion.h2>
+          
+          <TabsList className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+            <TabsTrigger
+              value="overview"
+              className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+            >
+              {t('common.overview')}
+            </TabsTrigger>
+            <TabsTrigger
+              value="invite"
+              className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+            >
+              {t('referral.invite')}
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        
+        <AnimatePresence mode="wait">
+          <TabsContent value="overview" className="mt-0">
+            {allReferrals.length > 0 ? (
+              <>
+                <StatsCards />
+                
+                <motion.div
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <motion.div 
+                    variants={itemVariants}
+                    className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm"
+                  >
+                    <div className="p-4 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                      <div>
+                        <h3 className="font-semibold text-lg">{t('referral.yourReferrals')}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('referral.earnFrom')}</p>
+                      </div>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => setActiveTab("invite")}
+                        className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
+                      >
+                        <Share2 className="h-4 w-4 mr-2" />
+                        <span className="hidden sm:inline">{t('referral.invite')}</span>
+                      </Button>
+                    </div>
+                    
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="hover:bg-transparent">
+                            <TableHead>{t('common.user')}</TableHead>
+                            <TableHead>{t('referral.registered')}</TableHead>
+                            <TableHead>{t('referral.status')}</TableHead>
+                            <TableHead>{t('referral.investments')}</TableHead>
+                            <TableHead className="text-right">{t('referral.earnings')}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {allReferrals.map((referral, index) => (
+                            <motion.tr
+                              key={referral.id || index}
+                              variants={itemVariants}
+                              className="hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                            >
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-8 w-8">
+                                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${referral.username}`} />
+                                    <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-blue-600 text-white">
+                                      {referral.username.substring(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium">{referral.username}</p>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {formatDate(referral.registeredAt)}
+                              </TableCell>
+                              <TableCell>
+                                {referral.hasDeposits ? (
+                                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-100">
+                                    <Check className="h-3 w-3 mr-1" />
+                                    {t('referral.active')}
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline">
+                                    {t('referral.noDeposits')}
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {referral.hasDeposits ? (
+                                  <span className="font-medium">{formatCurrency(referral.depositsAmount || 0)}</span>
+                                ) : (
+                                  <span className="text-gray-500 dark:text-gray-400">-</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {referral.hasDeposits ? (
+                                  <span className="font-medium text-green-600 dark:text-green-400">
+                                    +{formatCurrency(referral.earned || 0)}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-500 dark:text-gray-400">-</span>
+                                )}
+                              </TableCell>
+                            </motion.tr>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    
+                    {allReferrals.length < 5 && (
+                      <div className="p-5 text-center border-t border-gray-200 dark:border-gray-700">
+                        <p className="text-gray-500 dark:text-gray-400 mb-3">{t('referral.inviteMore')}</p>
+                        <Button
+                          variant="outline"
+                          onClick={() => setActiveTab("invite")}
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          {t('referral.inviteFriends')}
+                        </Button>
+                      </div>
+                    )}
+                  </motion.div>
+                  
+                  <motion.div
+                    variants={itemVariants}
+                    className="mt-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm p-5"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="font-semibold text-lg">{t('referral.programDetails')}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('referral.earnPercentage')}</p>
+                      </div>
+                      <div className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 px-3 py-1 rounded-full text-sm font-medium">
+                        5% {t('referral.cashback')}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-4">
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
+                          <UserPlus className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{t('referral.step1')}</h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {t('referral.step1Desc')}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4">
+                        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
+                          <BadgeDollarSign className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{t('referral.step2')}</h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {t('referral.step2Desc')}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-4">
+                        <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                          <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{t('referral.step3')}</h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {t('referral.step3Desc')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-5 pt-5 border-t border-gray-200 dark:border-gray-700">
+                      <div className="text-center">
+                        <Button
+                          variant="default"
+                          onClick={() => setActiveTab("invite")}
+                          className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
+                        >
+                          <Share2 className="h-4 w-4 mr-2" />
+                          {t('referral.startInviting')}
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              </>
+            ) : (
+              <EmptyState />
+            )}
+          </TabsContent>
+          
+          <TabsContent value="invite" className="mt-0">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-6"
+            >
+              <motion.div 
+                variants={itemVariants}
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm"
+              >
+                <div className="p-6 bg-gradient-to-r from-indigo-500/10 to-blue-500/10 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 opacity-10">
+                    <svg width="200" height="200" viewBox="0 0 200 200">
+                      <path d="M40,60 Q60,10 100,50 Q140,90 160,60" stroke="currentColor" strokeWidth="8" fill="none" />
+                      <path d="M160,60 Q180,30 190,80" stroke="currentColor" strokeWidth="8" fill="none" />
+                      <circle cx="40" cy="60" r="10" fill="currentColor" />
+                      <circle cx="160" cy="60" r="10" fill="currentColor" />
+                      <circle cx="190" cy="80" r="10" fill="currentColor" />
+                    </svg>
+                  </div>
+                  
+                  <div className="relative z-10">
+                    <h3 className="text-xl font-bold mb-2">{t('referral.yourReferralLink')}</h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">{t('referral.shareLink')}</p>
+                    
+                    <div className="flex gap-2 flex-col sm:flex-row">
+                      <div className="relative flex-1">
+                        <Input
+                          value={referralLink}
+                          readOnly
+                          className="pr-20 font-mono text-sm bg-white dark:bg-gray-900"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={copyReferralLink}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8"
+                        >
+                          {copied ? (
+                            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                          <span className="ml-1.5">{copied ? t('common.copied') : t('common.copy')}</span>
+                        </Button>
+                      </div>
+                      <Button
+                        variant="default"
+                        className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700"
+                        onClick={() => setIsShareModalOpen(true)}
+                      >
+                        <Share2 className="h-4 w-4 mr-2" />
+                        {t('referral.share')}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  <h4 className="font-semibold mb-4">{t('referral.shareOn')}</h4>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="justify-start h-12 border-blue-100 dark:border-blue-900/30 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      onClick={() => handleShare('facebook')}
+                    >
+                      <Facebook className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
+                      Facebook
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="justify-start h-12 border-sky-100 dark:border-sky-900/30 hover:bg-sky-50 dark:hover:bg-sky-900/20"
+                      onClick={() => handleShare('twitter')}
+                    >
+                      <Twitter className="h-5 w-5 text-sky-500 dark:text-sky-400 mr-2" />
+                      Twitter
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="justify-start h-12 border-cyan-100 dark:border-cyan-900/30 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
+                      onClick={() => handleShare('telegram')}
+                    >
+                      <Telegram className="h-5 w-5 text-cyan-500 dark:text-cyan-400 mr-2" />
+                      Telegram
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="justify-start h-12 border-red-100 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      onClick={() => handleShare('email')}
+                    >
+                      <Mail className="h-5 w-5 text-red-500 dark:text-red-400 mr-2" />
+                      Email
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                  <h4 className="font-semibold mb-4">{t('referral.orShareText')}</h4>
+                  
+                  <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
+                    <p className="text-gray-700 dark:text-gray-300 text-sm">
+                      {t('referral.shareTextTemplate')}
+                    </p>
+                    <p className="text-gray-700 dark:text-gray-300 text-sm mt-2 font-medium">
+                      {referralLink}
+                    </p>
+                  </div>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      const text = t('referral.shareTextTemplate') + ' ' + referralLink;
+                      navigator.clipboard.writeText(text);
+                      toast({
+                        title: t('success'),
+                        description: t('referral.textCopied'),
+                        variant: "default"
+                      });
+                    }}
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    {t('referral.copyText')}
+                  </Button>
+                </div>
+              </motion.div>
+              
+              <motion.div
+                variants={itemVariants}
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm p-6"
+              >
+                <h3 className="text-xl font-bold mb-4">{t('referral.benefits')}</h3>
+                
+                <div className="space-y-5">
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                      <BadgeDollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-1">{t('referral.benefit1')}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('referral.benefit1Desc')}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
+                      <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-1">{t('referral.benefit2')}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('referral.benefit2Desc')}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                      <Award className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-1">{t('referral.benefit3')}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('referral.benefit3Desc')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-6 p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h5 className="font-medium">{t('referral.progress')}</h5>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('referral.nextTier')}: {allReferrals.length}/5
+                      </p>
+                    </div>
+                    <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 hover:bg-indigo-100">
+                      {t('referral.tier')} 1
+                    </Badge>
+                  </div>
+                  
+                  <Progress value={Math.min((allReferrals.length / 5) * 100, 100)} className="h-2" />
+                  
+                  <div className="mt-3 text-xs text-gray-500 dark:text-gray-400 flex justify-between">
+                    <span>0</span>
+                    <span>5 {t('referral.friends')}</span>
+                    <span>10</span>
+                    <span>20+</span>
+                  </div>
+                </div>
+              </motion.div>
+              
+              {allReferrals.length > 0 && (
+                <motion.div
+                  variants={itemVariants}
+                  className="mt-6 flex justify-center"
+                >
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setActiveTab("overview")}
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    {t('referral.viewReferrals')}
+                  </Button>
+                </motion.div>
+              )}
+            </motion.div>
+          </TabsContent>
+        </AnimatePresence>
       </Tabs>
     </div>
   );
-}
+};
+
+export default UserReferrals;

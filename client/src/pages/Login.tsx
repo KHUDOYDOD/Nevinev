@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,15 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { motion, AnimatePresence } from "framer-motion";
+import { LogIn, User, Lock, Eye, EyeOff, ChevronRight, AlertCircle } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -26,12 +20,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // Define schema for login form
 const loginSchema = z.object({
-  username: z.string().min(1, { message: "Username is required" }),
-  password: z.string().min(1, { message: "Password is required" }),
+  username: z.string().min(1, { message: "Имя пользователя обязательно" }),
+  password: z.string().min(1, { message: "Пароль обязателен" }),
   rememberMe: z.boolean().optional(),
 });
 
@@ -42,7 +35,21 @@ export default function Login() {
   const { login } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState("");
   const [, navigate] = useLocation();
+
+  // Анимированный фон
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   // Initialize form with react-hook-form
   const form = useForm<LoginFormValues>({
@@ -56,6 +63,7 @@ export default function Login() {
 
   // Handle form submission
   const onSubmit = async (values: LoginFormValues) => {
+    setLoginError("");
     setIsLoading(true);
     try {
       console.log("Submitting login form with:", values);
@@ -66,138 +74,308 @@ export default function Login() {
       // Навигация и тост обрабатываются в хуке useAuth
     } catch (error) {
       console.error("Login error:", error);
+      setLoginError("Неверное имя пользователя или пароль");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Демо-кнопки для быстрого входа
+  const handleDemoLogin = (type: 'admin' | 'user') => {
+    if (type === 'admin') {
+      form.setValue('username', 'Admin');
+      form.setValue('password', 'X12345x');
+    } else {
+      form.setValue('username', 'User');
+      form.setValue('password', 'X12345x');
+    }
+    form.handleSubmit(onSubmit)();
+  };
+
   return (
-    <div className="flex min-h-screen relative overflow-hidden">
-      {/* Декоративные элементы фона */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-bl from-primary/10 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 w-1/3 h-full bg-gradient-to-tr from-secondary/10 to-transparent"></div>
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 flex items-center justify-center">
+      {/* Динамический фон с эффектом движения */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Анимированные круги */}
+        <motion.div 
+          className="absolute w-[60vw] h-[60vw] rounded-full bg-gradient-to-r from-fuchsia-500/20 to-purple-600/20 blur-3xl"
+          animate={{ 
+            x: mousePosition.x * 0.02,
+            y: mousePosition.y * 0.02,
+            scale: [1, 1.05, 1]
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+          style={{ top: "-20%", left: "-10%" }}
+        />
         
-        <div className="absolute top-20 left-10 w-24 h-24 rounded-full bg-primary/5 blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-24 h-24 rounded-full bg-secondary/5 blur-3xl"></div>
+        <motion.div 
+          className="absolute w-[40vw] h-[40vw] rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-600/20 blur-3xl"
+          animate={{ 
+            x: mousePosition.x * -0.01,
+            y: mousePosition.y * -0.01,
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+          style={{ bottom: "-10%", right: "-5%" }}
+        />
         
-        <div className="absolute -left-10 top-1/4 w-40 h-40 rounded-full bg-blue-500/5 animate-float animate-delay-300 blur-2xl"></div>
-        <div className="absolute -right-10 top-3/4 w-40 h-40 rounded-full bg-purple-500/5 animate-float animate-delay-200 blur-2xl"></div>
-      </div>
-      
-      {/* Левая часть с иллюстрацией (показывается только на больших экранах) */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center bg-gradient-to-br from-primary/90 to-accent/90">
-        <div className="relative z-10 p-12 text-white max-w-lg animate-fade-in">
-          <div className="mb-8">
-            <h2 className="text-4xl font-extrabold mb-4">TRADEPO | Smart Profit System</h2>
-            <p className="text-xl text-white/80">Инвестируйте с уверенностью и получайте стабильный доход с нашей надежной платформой.</p>
-          </div>
-          
-          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-8">
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mr-4">
-                <span className="text-2xl">💰</span>
-              </div>
-              <div>
-                <h3 className="font-bold">Высокая доходность</h3>
-                <p className="text-sm text-white/80">До 15% ежедневного дохода</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center mb-4">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mr-4">
-                <span className="text-2xl">🔒</span>
-              </div>
-              <div>
-                <h3 className="font-bold">Безопасность</h3>
-                <p className="text-sm text-white/80">Защита ваших инвестиций</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mr-4">
-                <span className="text-2xl">⚡</span>
-              </div>
-              <div>
-                <h3 className="font-bold">Быстрые выплаты</h3>
-                <p className="text-sm text-white/80">Вывод средств в течение 24 часов</p>
-              </div>
-            </div>
-          </div>
+        {/* Графический эффект сетки */}
+        <div className="absolute inset-0 perspective-[1000px]">
+          <motion.div
+            className="absolute inset-0"
+            animate={{
+              rotateX: [0, 5, 0, -5, 0],
+              rotateY: [0, -5, 0, 5, 0]
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            style={{
+              backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), 
+                                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)`,
+              backgroundSize: '50px 50px',
+              transformStyle: 'preserve-3d'
+            }}
+          />
         </div>
         
-        {/* Декоративные элементы */}
-        <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-black/20 to-transparent"></div>
-        <div className="absolute top-0 left-0 w-full h-20 bg-gradient-to-b from-black/20 to-transparent"></div>
+        {/* Плавающие частицы */}
+        {Array.from({ length: 30 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-white"
+            style={{
+              width: Math.random() * 3 + 1 + 'px',
+              height: Math.random() * 3 + 1 + 'px',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              opacity: Math.random() * 0.5 + 0.1,
+            }}
+            animate={{
+              y: [0, -30, 0],
+              x: [0, Math.random() * 20 - 10, 0],
+              opacity: [0, 0.5, 0],
+              scale: [0, 1, 0]
+            }}
+            transition={{
+              duration: Math.random() * 5 + 5,
+              repeat: Infinity,
+              delay: Math.random() * 5
+            }}
+          />
+        ))}
       </div>
       
-      {/* Правая часть с формой */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex flex-col items-center w-full max-w-md">
-          <div className="absolute top-4 right-4">
-            <LanguageSwitcher />
+      {/* Основное содержимое */}
+      <div className="container relative z-10 mx-auto px-4 py-12 flex flex-col lg:flex-row items-center justify-center gap-12">
+        {/* Левая часть - информация */}
+        <motion.div 
+          className="lg:w-1/2 max-w-lg text-white text-center lg:text-left"
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div 
+            className="mb-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+          >
+            <motion.div 
+              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white"
+              animate={{ 
+                textShadow: [
+                  "0 0 10px rgba(255, 255, 255, 0.3)",
+                  "0 0 20px rgba(255, 255, 255, 0.5)",
+                  "0 0 10px rgba(255, 255, 255, 0.3)"
+                ]
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              <Link href="/" className="flex items-center justify-center lg:justify-start">
+                <span className="font-bold bg-gradient-to-r from-fuchsia-400 to-violet-400 bg-clip-text text-transparent">TRADEPO</span>
+                <span className="text-white/90 ml-2 text-lg">| Smart Profit System</span>
+              </Link>
+            </motion.div>
+            <motion.p 
+              className="text-xl text-white/90 mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
+              Инвестируйте с уверенностью и получайте стабильный доход с нашей надежной платформой.
+            </motion.p>
+          </motion.div>
+          
+          {/* Карточки с преимуществами */}
+          <div className="space-y-4">
+            {[
+              { icon: <motion.div animate={{ rotate: [0, 5, -5, 0] }} transition={{ duration: 2, repeat: Infinity }} className="text-fuchsia-400"><span className="text-2xl">💰</span></motion.div>, title: "Высокая доходность", desc: "До 15% ежедневного дохода" },
+              { icon: <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }} className="text-blue-400"><span className="text-2xl">🔒</span></motion.div>, title: "Безопасность", desc: "Защита ваших инвестиций" },
+              { icon: <motion.div animate={{ y: [0, -3, 0] }} transition={{ duration: 1.5, repeat: Infinity }} className="text-purple-400"><span className="text-2xl">⚡</span></motion.div>, title: "Быстрые выплаты", desc: "Вывод средств в течение 24 часов" }
+            ].map((item, index) => (
+              <motion.div 
+                key={index}
+                className="flex items-center bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 + index * 0.2, duration: 0.5 }}
+                whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.15)" }}
+              >
+                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mr-4">
+                  {item.icon}
+                </div>
+                <div>
+                  <h3 className="font-bold">{item.title}</h3>
+                  <p className="text-sm text-white/80">{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
-          
-          <Link href="/" className="flex items-center mb-8 animate-fade-in">
-            <span className="font-bold text-3xl text-primary">TRADEPO</span>
-            <span className="text-sm text-muted-foreground ml-2">
-              | Smart Profit System
-            </span>
-          </Link>
-          
-          <Card className="w-full glassmorphism animate-scale-in">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">
+        </motion.div>
+        
+        {/* Правая часть - форма входа */}
+        <motion.div 
+          className="w-full lg:w-1/2 max-w-md"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div 
+            className="bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 overflow-hidden shadow-2xl"
+            whileHover={{ boxShadow: "0 25px 50px -12px rgba(79, 70, 229, 0.4)" }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Заголовок формы */}
+            <div className="bg-gradient-to-r from-fuchsia-800/50 to-violet-800/50 p-6">
+              <motion.h2 
+                className="text-2xl font-bold text-white flex items-center"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <motion.div 
+                  animate={{ 
+                    rotate: [0, 10, -10, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                  className="mr-2"
+                >
+                  <LogIn className="h-6 w-6 text-fuchsia-300" />
+                </motion.div>
                 Вход в систему
-              </CardTitle>
-              <CardDescription className="text-center text-muted-foreground">
+              </motion.h2>
+              <motion.p 
+                className="text-white/80 mt-1"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
                 Войдите в свой аккаунт для доступа к панели управления
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+              </motion.p>
+            </div>
+            
+            {/* Форма входа */}
+            <div className="p-6">
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-4"
                 >
+                  {/* Ошибка входа */}
+                  <AnimatePresence>
+                    {loginError && (
+                      <motion.div 
+                        className="bg-red-500/20 backdrop-blur-sm text-white rounded-lg p-3 flex items-start"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                      >
+                        <AlertCircle className="h-5 w-5 text-red-300 mr-2 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium">Ошибка входа</p>
+                          <p className="text-sm text-white/80">{loginError}</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  
+                  {/* Имя пользователя */}
                   <FormField
                     control={form.control}
                     name="username"
                     render={({ field }) => (
-                      <FormItem className="animate-fade-in animate-delay-100">
-                        <FormLabel>Имя пользователя</FormLabel>
+                      <FormItem>
+                        <FormLabel className="text-white/90 font-medium">
+                          Имя пользователя
+                        </FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Введите имя пользователя"
-                            className="rounded-lg border-muted"
-                            {...field}
-                            disabled={isLoading}
-                          />
+                          <div className="relative">
+                            <Input
+                              placeholder="Введите имя пользователя"
+                              className="bg-white/10 border-white/20 text-white placeholder:text-white/50 pl-10 h-12 focus:border-fuchsia-400 focus:ring-fuchsia-400/30"
+                              {...field}
+                              disabled={isLoading}
+                            />
+                            <User className="h-5 w-5 text-white/50 absolute left-3 top-3.5" />
+                          </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-300" />
                       </FormItem>
                     )}
                   />
+                  
+                  {/* Пароль */}
                   <FormField
                     control={form.control}
                     name="password"
                     render={({ field }) => (
-                      <FormItem className="animate-fade-in animate-delay-200">
-                        <FormLabel>Пароль</FormLabel>
+                      <FormItem>
+                        <FormLabel className="text-white/90 font-medium">
+                          Пароль
+                        </FormLabel>
                         <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="••••••••"
-                            className="rounded-lg border-muted"
-                            {...field}
-                            disabled={isLoading}
-                          />
+                          <div className="relative">
+                            <Input
+                              type={showPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              className="bg-white/10 border-white/20 text-white placeholder:text-white/50 pl-10 pr-10 h-12 focus:border-fuchsia-400 focus:ring-fuchsia-400/30"
+                              {...field}
+                              disabled={isLoading}
+                            />
+                            <Lock className="h-5 w-5 text-white/50 absolute left-3 top-3.5" />
+                            <motion.button
+                              type="button"
+                              className="absolute right-3 top-3.5 text-white/50 hover:text-white"
+                              onClick={() => setShowPassword(!showPassword)}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </motion.button>
+                          </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-300" />
                       </FormItem>
                     )}
                   />
-                  <div className="flex items-center justify-between animate-fade-in animate-delay-300">
+                  
+                  {/* Дополнительные опции */}
+                  <div className="flex items-center justify-between py-2">
                     <FormField
                       control={form.control}
                       name="rememberMe"
@@ -205,106 +383,148 @@ export default function Login() {
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id="rememberMe"
-                            className="border-muted"
+                            className="border-white/30 bg-white/10 data-[state=checked]:bg-fuchsia-600 data-[state=checked]:border-fuchsia-600"
                             checked={field.value}
                             onCheckedChange={field.onChange}
                             disabled={isLoading}
                           />
                           <label
                             htmlFor="rememberMe"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            className="text-sm font-medium text-white/80 cursor-pointer"
                           >
                             Запомнить меня
                           </label>
                         </div>
                       )}
                     />
+                    
                     <Link
                       href="#"
-                      className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                      className="text-sm font-medium text-fuchsia-300 hover:text-fuchsia-200 transition-colors"
                     >
                       Забыли пароль?
                     </Link>
                   </div>
-                  <Button
-                    type="submit"
-                    className="w-full modern-button bg-primary hover:bg-primary/90 text-white font-bold rounded-full py-6 shadow-lg shadow-primary/30 animate-fade-in animate-delay-400"
-                    disabled={isLoading}
+                  
+                  {/* Кнопка входа */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {isLoading ? (
-                      <>
-                        <svg
-                          className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Загрузка...
-                      </>
-                    ) : (
-                      "Войти"
-                    )}
-                  </Button>
+                    <Button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-fuchsia-600 to-violet-600 hover:from-fuchsia-500 hover:to-violet-500 text-white font-bold h-12 rounded-lg shadow-lg shadow-fuchsia-900/30 relative overflow-hidden group"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center justify-center">
+                          <svg
+                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Вход...
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center">
+                          Войти
+                          <ChevronRight className="h-5 w-5 ml-1 transition-transform group-hover:translate-x-1" />
+                        </div>
+                      )}
+                      
+                      {/* Эффект блика */}
+                      <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 transform translate-x-[-100%] group-hover:translate-x-[100%] ease-in-out"></span>
+                    </Button>
+                  </motion.div>
+                  
+                  {/* Разделитель */}
+                  <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-white/20"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-violet-900/30 backdrop-blur-sm px-2 text-white/60 rounded-md">или</span>
+                    </div>
+                  </div>
+                  
+                  {/* Быстрые опции входа */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white flex items-center justify-center"
+                        onClick={() => navigate("/register")}
+                      >
+                        Регистрация
+                      </Button>
+                    </motion.div>
+                    
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Button
+                        type="button"
+                        className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white"
+                        onClick={() => handleDemoLogin('user')}
+                      >
+                        Демо-аккаунт
+                      </Button>
+                    </motion.div>
+                  </div>
+                  
+                  {/* Демо-вход администратора */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="mt-2"
+                  >
+                    <Button
+                      type="button"
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white flex items-center justify-center"
+                      onClick={() => handleDemoLogin('admin')}
+                    >
+                      <span className="mr-2">👑</span> Демо-вход администратора
+                    </Button>
+                  </motion.div>
                 </form>
               </Form>
               
-              <div className="relative my-6 animate-fade-in animate-delay-500">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-muted"></div>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">или</span>
-                </div>
+              {/* Нижняя информация */}
+              <div className="mt-6 text-center">
+                <p className="text-xs text-white/60">
+                  Входя в систему, вы соглашаетесь с нашими
+                  <Link href="#" className="text-fuchsia-300 hover:text-fuchsia-200 mx-1">
+                    Условиями использования
+                  </Link>
+                  и
+                  <Link href="#" className="text-fuchsia-300 hover:text-fuchsia-200 mx-1">
+                    Политикой конфиденциальности
+                  </Link>
+                </p>
               </div>
-              
-              <Button
-                variant="outline"
-                className="w-full border-muted text-muted-foreground hover:text-foreground font-medium animate-fade-in animate-delay-500 mb-3"
-                onClick={() => window.location.href = "/register"}
-              >
-                Зарегистрироваться
-              </Button>
-              
-              <Button
-                variant="secondary"
-                className="w-full font-medium animate-fade-in animate-delay-600 bg-gradient-to-r from-blue-500 to-purple-500 text-white"
-                onClick={() => {
-                  form.setValue('username', 'Admin');
-                  form.setValue('password', 'X12345x');
-                  form.handleSubmit(onSubmit)();
-                }}
-              >
-                Войти как администратор (демо)
-              </Button>
-            </CardContent>
-            <CardFooter>
-              <p className="text-center text-xs text-muted-foreground mt-2 w-full animate-fade-in animate-delay-600">
-                Входя в систему, вы соглашаетесь с нашими
-                <Link href="#" className="underline underline-offset-4 ml-1 hover:text-primary">
-                  Условиями использования
-                </Link>
-                <span className="mx-1">и</span>
-                <Link href="#" className="underline underline-offset-4 hover:text-primary">
-                  Политикой конфиденциальности
-                </Link>
-              </p>
-            </CardFooter>
-          </Card>
-        </div>
+            </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

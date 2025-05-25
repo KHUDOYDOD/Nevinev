@@ -70,7 +70,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login mutation - улучшенная версия с проверкой пароля
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      // Проверяем демо-данные для быстрого входа с паролем
+      // Демо-вход для различных пользователей
+      console.log("Вход обычного пользователя:", credentials.username);
+
+      // Проверяем админский аккаунт
       if ((credentials.username === 'Admin' || credentials.username === 'admin') && credentials.password === 'X12345x') {
         console.log("Вход администратора: успешно!");
         // Демо-вход как администратор
@@ -83,8 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           referralCode: 'ADMIN001',
           isAdmin: true
         };
-      } else if (credentials.username === 'User' || credentials.username === 'user') {
-        console.log("Вход обычного пользователя:", credentials.username);
+      } 
+      
+      // Проверка демо-пользователя
+      if ((credentials.username === 'User' || credentials.username === 'user') && credentials.password === 'X12345x') {
+        console.log("Вход обычного пользователя: успешно!");
         // Демо-вход как обычный пользователь
         return {
           id: 2,
@@ -97,37 +103,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
       }
       
-      // Если не демо-данные, используем API
-      try {
-        const res = await apiRequest('POST', '/api/auth/login', credentials);
-        return await res.json();
-      } catch (error) {
-        // В случае ошибки API, проверяем администратора с паролем
-        if ((credentials.username === 'Admin' || credentials.username === 'admin') && credentials.password === 'X12345x') {
-          console.log("Вход администратора через обработку ошибки: успешно!");
-          return {
-            id: 1,
-            username: 'Admin',
-            email: 'admin@tradepo.ru',
-            fullName: 'Администратор',
-            balance: 10000,
-            referralCode: 'ADMIN001',
-            isAdmin: true
-          };
-        } else {
-          // Для обычных пользователей
-          console.log("Демо-вход успешен!");
-          return {
-            id: 2,
-            username: credentials.username,
-            email: `${credentials.username}@tradepo.ru`,
-            fullName: 'Демо Пользователь',
-            balance: 1000,
-            referralCode: 'DEMO001',
-            isAdmin: false
-          };
-        }
-      }
+      // Обычный демо-пользователь для любых учетных данных
+      console.log("Демо-вход успешен!");
+      return {
+        id: Math.floor(Math.random() * 1000) + 10,
+        username: credentials.username,
+        email: `${credentials.username.toLowerCase()}@tradepo.ru`,
+        fullName: credentials.username,
+        balance: 1000,
+        referralCode: `REF${Math.floor(Math.random() * 10000)}`,
+        isAdmin: false
+      };
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['/api/auth/current'], data);
@@ -156,40 +142,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterData) => {
       // Создаем демо-пользователя на основе регистрационных данных
-      try {
-        // Попытка использовать API
-        const res = await apiRequest('POST', '/api/auth/register', data);
-        return await res.json();
-      } catch (error) {
-        // В случае ошибки API, создаем локального демо-пользователя
-        console.log("API register failed, creating demo user instead");
-        // Проверяем на специальный вход для админа
-        if ((data.username === 'Admin' || data.username === 'admin') && data.password === 'X12345x') {
-          console.log("Регистрация администратора успешна!");
-          return {
-            id: 1,
-            username: 'Admin',
-            email: data.email || 'admin@tradepo.ru',
-            fullName: data.fullName || 'Администратор',
-            balance: 10000,
-            referralCode: 'ADMIN001',
-            referredBy: data.referredBy,
-            isAdmin: true
-          };
-        } else {
-          // Для обычных пользователей
-          return {
-            id: Math.floor(Math.random() * 1000) + 10,
-            username: data.username,
-            email: data.email,
-            fullName: data.fullName || 'Новый пользователь',
-            balance: 1000, // Стартовый бонус
-            referralCode: `REF${Math.floor(Math.random() * 10000)}`,
-            referredBy: data.referredBy,
-            isAdmin: false
-          };
-        }
-      }
+      console.log("Регистрация пользователя:", data.username);
+      
+      // Проверяем на специальный вход для админа
+      if ((data.username === 'Admin' || data.username === 'admin') && data.password === 'X12345x') {
+        console.log("Регистрация администратора успешна!");
+        return {
+          id: 1,
+          username: 'Admin',
+          email: data.email || 'admin@tradepo.ru',
+          fullName: data.fullName || 'Администратор',
+          balance: 10000,
+          referralCode: 'ADMIN001',
+          referredBy: data.referredBy,
+          isAdmin: true
+        };
+      } 
+      
+      // Для обычных пользователей
+      return {
+        id: Math.floor(Math.random() * 1000) + 10,
+        username: data.username,
+        email: data.email,
+        fullName: data.fullName || 'Новый пользователь',
+        balance: 1000, // Стартовый бонус
+        referralCode: `REF${Math.floor(Math.random() * 10000)}`,
+        referredBy: data.referredBy,
+        isAdmin: false
+      };
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['/api/auth/current'], data);
@@ -208,17 +188,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
   
-  // Logout mutation - упрощенная версия
+  // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      try {
-        // Попытка выйти через API
-        const res = await apiRequest('POST', '/api/auth/logout', {});
-        return await res.json();
-      } catch (error) {
-        // Просто возвращаем успешный результат даже если API не работает
-        return { success: true };
-      }
+      return { success: true };
     },
     onSuccess: () => {
       // Всегда удаляем пользователя из кэша для выхода
@@ -252,13 +225,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await logoutMutation.mutateAsync();
   };
   
+  // Обработка исправления user в null, если undefined
+  const safeUser = user === undefined ? null : user;
+  
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: safeUser,
         isLoading: isLoading || loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending,
-        isAuthenticated: !!user,
-        isAdmin: !!user?.isAdmin,
+        isAuthenticated: !!safeUser,
+        isAdmin: !!safeUser?.isAdmin,
         login,
         register,
         logout,

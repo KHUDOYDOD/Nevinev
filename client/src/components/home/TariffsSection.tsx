@@ -39,6 +39,13 @@ export default function TariffsSection() {
     'bg-gradient-to-br from-purple-600/90 to-violet-800/90' // Элитный
   ];
   
+  // Добавляем описания к тарифам
+  const tariffDescriptions = [
+    'Минимальный 100$ за 24 час 5%', // Базовый
+    'Минимальный 500$ за 24 час 7%', // Премиум
+    'Минимальный 1000$ за 24 час 10%' // Элитный
+  ];
+  
   if (isLoading) {
     return (
       <section id="tariffs" className="py-20 bg-gradient-to-b from-background to-gray-100 dark:from-background dark:to-gray-900/20">
@@ -113,7 +120,7 @@ export default function TariffsSection() {
                   
                   <div className="relative z-10">
                     <h3 className="text-2xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-white">{tariff.name}</h3>
-                    <p className="text-white/80 text-sm mb-6">{tariff.description || 'Идеальный выбор для начинающих инвесторов'}</p>
+                    <p className="text-white/80 text-sm mb-6">{tariffDescriptions[index] || 'Идеальный выбор для начинающих инвесторов'}</p>
                     
                     <div className="flex items-baseline mb-0 group">
                       <div className="relative">

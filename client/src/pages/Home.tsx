@@ -10,6 +10,8 @@ import ActivitySection from "@/components/home/ActivitySection";
 import AdvantagesSection from "@/components/home/AdvantagesSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import ContactSection from "@/components/home/ContactSection";
+import WhyChooseUsSection from "@/components/home/WhyChooseUsSection";
+import HowToStartSection from "@/components/home/HowToStartSection";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,9 +43,11 @@ export default function Home() {
       <main className="flex-grow">
         <HeroSection />
         <StatsSection />
+        <WhyChooseUsSection />
+        <HowToStartSection />
         <CalculatorSection />
-        <HowItWorksSection />
         <TariffsSection />
+        <HowItWorksSection />
         <ActivitySection />
         <AdvantagesSection />
         <TestimonialsSection />

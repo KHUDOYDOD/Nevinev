@@ -840,12 +840,13 @@ export default function UserDashboard() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <TabsList className="w-full grid grid-cols-5 h-16 bg-white dark:bg-gray-800 shadow-xl rounded-2xl">
-                  {navItems.map((item) => (
-                    <TabsTrigger
-                      key={item.id}
-                      value={item.id}
-                      className="data-[state=active]:shadow-none data-[state=active]:bg-transparent relative overflow-hidden rounded-xl"
+                <Tabs defaultValue={activeTab}>
+                  <TabsList className="w-full grid grid-cols-5 h-16 bg-white dark:bg-gray-800 shadow-xl rounded-2xl">
+                    {navItems.map((item) => (
+                      <TabsTrigger
+                        key={item.id}
+                        value={item.id}
+                        className="data-[state=active]:shadow-none data-[state=active]:bg-transparent relative overflow-hidden rounded-xl"
                       onClick={() => setActiveTab(item.id)}
                     >
                       <div className="flex flex-col items-center">

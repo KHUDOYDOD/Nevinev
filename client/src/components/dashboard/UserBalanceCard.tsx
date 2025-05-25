@@ -261,13 +261,14 @@ const UserBalanceCard = ({ user }) => {
             {t('dashboard.balance')}
           </motion.h2>
           
-          <TabsList className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-            <TabsTrigger
-              value="overview"
-              className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
-            >
-              {t('common.overview')}
-            </TabsTrigger>
+          <Tabs defaultValue="overview">
+            <TabsList className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+              <TabsTrigger
+                value="overview"
+                className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+              >
+                {t('common.overview')}
+              </TabsTrigger>
             <TabsTrigger
               value="deposit"
               className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"

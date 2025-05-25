@@ -26,7 +26,7 @@ import UserTransactions from "./UserTransactions";
 import UserReferrals from "./UserReferrals";
 import UserSettings from "./UserSettings";
 import { useToast } from "@/hooks/use-toast";
-import type { User } from "@/contexts/AuthContext";
+import { User } from "@/contexts/AuthContext";
 import LanguageSwitcher from "../layout/LanguageSwitcher";
 import { useTheme } from "@/components/ThemeProvider";
 

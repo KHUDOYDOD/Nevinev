@@ -445,6 +445,7 @@ i18n
   .init({
     resources,
     fallbackLng: 'ru',
+    lng: 'ru', // Принудительно устанавливаем русский язык
     interpolation: {
       escapeValue: false, // React already safes from XSS
     },

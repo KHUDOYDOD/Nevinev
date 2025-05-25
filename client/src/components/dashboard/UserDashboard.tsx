@@ -167,20 +167,20 @@ export default function UserDashboard() {
       }, 800);
     };
 
-    // Запускаем анимацию волн для фона с оптимизированной частотой (раз в 2 секунды)
-    const waveAnimation = setInterval(() => {
-      setWavePhase(prev => (prev + 0.01) % (2 * Math.PI));
-    }, 2000);
-
-    const pulseInterval = setInterval(pulseAnimation, 60000); // Раз в минуту
-
-    // Вращение для иконки обновления
+    // Отключаем все автоматические анимации и обновления
+    // Единственная анимация - при первой загрузке компонента
     const rotateAnimation = () => {
       rotate.set(0);
       rotate.set(360, { duration: 1.5, ease: "easeInOut" });
     };
-
-    const rotateInterval = setInterval(rotateAnimation, 60000); // Раз в минуту
+    
+    // Запускаем только один раз
+    rotateAnimation();
+    
+    // Пустые интервалы для очистки
+    const waveAnimation = null;
+    const pulseInterval = null;
+    const rotateInterval = null;
 
     return () => {
       clearInterval(pulseInterval);

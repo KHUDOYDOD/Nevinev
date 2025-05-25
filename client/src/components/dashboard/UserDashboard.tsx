@@ -1,325 +1,565 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
 import { 
-  LayoutDashboard, 
-  PiggyBank, 
-  BarChart4, 
-  Users, 
-  Settings,
-  TrendingUp
+  Wallet, 
+  TrendingUp, 
+  UserPlus, 
+  Settings, 
+  History, 
+  CreditCard, 
+  PiggyBank,
+  ChevronRight,
+  Bell,
+  LogOut,
+  HelpCircle
 } from "lucide-react";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
+
 import UserBalanceCard from "./UserBalanceCard";
 import UserDeposits from "./UserDeposits";
 import UserTransactions from "./UserTransactions";
 import UserReferrals from "./UserReferrals";
 import UserSettings from "./UserSettings";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+// Анимации для вкладок
+const tabVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.1 + 0.3,
+      duration: 0.5,
+      ease: [0.22, 1, 0.36, 1]
+    }
+  })
+};
+
+// Анимации для карточек
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1]
+    }
+  }
+};
+
+// Анимации для заголовков
+const headerVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
+};
+
+// Анимации для меню
+const menuItemVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: {
+      delay: i * 0.05,
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  })
+};
 
 export default function UserDashboard() {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("overview");
-  
-  // Временные данные для демонстрации
-  const demoDeposits = [
+  const { user, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState("balance");
+  const [isMobile, setIsMobile] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Проверка размера экрана
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Запросы к API для получения данных
+  const { data: depositsData = [] } = useQuery({
+    queryKey: ["/api/user/deposits"],
+    enabled: !!user,
+  });
+
+  const { data: transactionsData = [] } = useQuery({
+    queryKey: ["/api/user/transactions"],
+    enabled: !!user,
+  });
+
+  const { data: referralsData = [] } = useQuery({
+    queryKey: ["/api/user/referrals"],
+    enabled: !!user,
+  });
+
+  // Элементы навигации
+  const navItems = [
     {
-      id: 1,
-      tariffName: t('common.basic'),
-      amount: 500,
-      dailyProfit: 25,
-      date: new Date(2025, 4, 15),
-      status: "active" as const,
-      duration: 30,
-      daysLeft: 20
+      id: "balance",
+      label: t('dashboard.balance'),
+      icon: <Wallet className="w-5 h-5" />,
+      badge: null
     },
     {
-      id: 2,
-      tariffName: t('common.premium'),
-      amount: 1000,
-      dailyProfit: 100,
-      date: new Date(2025, 4, 20),
-      status: "active" as const,
-      duration: 30,
-      daysLeft: 25
+      id: "deposits",
+      label: t('dashboard.deposits'),
+      icon: <PiggyBank className="w-5 h-5" />,
+      badge: depositsData?.length || null
+    },
+    {
+      id: "transactions",
+      label: t('dashboard.transactions'),
+      icon: <History className="w-5 h-5" />,
+      badge: transactionsData?.length > 5 ? 5 : transactionsData?.length || null
+    },
+    {
+      id: "referrals",
+      label: t('dashboard.referrals'),
+      icon: <UserPlus className="w-5 h-5" />,
+      badge: referralsData?.length || null
+    },
+    {
+      id: "settings",
+      label: t('dashboard.settings'),
+      icon: <Settings className="w-5 h-5" />,
+      badge: null
     }
   ];
-  
-  const demoTransactions = [
-    {
-      id: 1,
-      type: "deposit" as const,
-      amount: 500,
-      status: "completed" as const,
-      date: new Date(2025, 4, 15),
-      description: "Депозит Базовый"
-    },
-    {
-      id: 2,
-      type: "profit" as const,
-      amount: 25,
-      status: "completed" as const,
-      date: new Date(2025, 4, 16),
-      description: "Начисление прибыли"
-    },
-    {
-      id: 3,
-      type: "deposit" as const,
-      amount: 1000,
-      status: "completed" as const,
-      date: new Date(2025, 4, 20),
-      description: "Депозит Премиум"
-    },
-    {
-      id: 4,
-      type: "profit" as const,
-      amount: 125,
-      status: "completed" as const,
-      date: new Date(2025, 4, 21),
-      description: "Начисление прибыли"
-    },
-    {
-      id: 5,
-      type: "withdraw" as const,
-      amount: 100,
-      status: "pending" as const,
-      date: new Date(2025, 4, 22),
-      description: "Вывод средств"
-    }
-  ];
-  
-  const demoReferrals = [
-    {
-      id: 1,
-      username: 'trader2025',
-      email: 'trader2025@example.com',
-      joinDate: new Date(2025, 4, 10),
-      isActive: true,
-      earned: 25.50
-    },
-    {
-      id: 2,
-      username: 'investpro',
-      email: 'investpro@example.com',
-      joinDate: new Date(2025, 4, 12),
-      isActive: true,
-      earned: 37.20
-    },
-    {
-      id: 3,
-      username: 'cryptomaster',
-      email: 'cryptomaster@example.com',
-      joinDate: new Date(2025, 4, 18),
-      isActive: false,
-      earned: 0
-    }
-  ];
-  
-  // Обработчики для кнопок действий
-  const handleDeposit = () => {
-    console.log("Открытие модала депозита");
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ru-RU', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
   };
-  
-  const handleWithdraw = () => {
-    console.log("Открытие модала вывода");
-  };
-  
-  const handleNewDeposit = () => {
-    console.log("Создание нового депозита");
-  };
-  
-  return (
-    <div className="container mx-auto px-4 py-8">
+
+  // Панель быстрой навигации
+  const QuickStats = () => (
+    <motion.div
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      className="grid grid-cols-2 md:grid-cols-4 gap-4"
+    >
+      <QuickStatCard
+        title={t('stats.balance')}
+        value={formatCurrency(user?.balance || 0)}
+        icon={<Wallet className="h-5 w-5" />}
+        color="indigo"
+        onClick={() => setActiveTab("balance")}
+      />
+      <QuickStatCard
+        title={t('stats.deposits')}
+        value={depositsData?.length?.toString() || "0"}
+        icon={<CreditCard className="h-5 w-5" />}
+        color="green"
+        onClick={() => setActiveTab("deposits")}
+      />
+      <QuickStatCard
+        title={t('stats.profit')}
+        value={formatCurrency(1250)}
+        icon={<TrendingUp className="h-5 w-5" />}
+        color="purple"
+        onClick={() => setActiveTab("transactions")}
+      />
+      <QuickStatCard
+        title={t('stats.referrals')}
+        value={referralsData?.length?.toString() || "0"}
+        icon={<UserPlus className="h-5 w-5" />}
+        color="amber"
+        onClick={() => setActiveTab("referrals")}
+      />
+    </motion.div>
+  );
+
+  // Компонент карточки быстрой статистики
+  const QuickStatCard = ({ title, value, icon, color, onClick }: any) => {
+    const colorClasses = {
+      indigo: "from-indigo-500 to-blue-600 shadow-indigo-500/20",
+      green: "from-green-500 to-emerald-600 shadow-green-500/20",
+      purple: "from-purple-500 to-fuchsia-600 shadow-purple-500/20",
+      amber: "from-amber-500 to-orange-600 shadow-amber-500/20"
+    };
+
+    return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="space-y-6"
+        whileHover={{ y: -5, transition: { duration: 0.2 } }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onClick}
+        className="relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4 cursor-pointer group"
       >
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              {t('dashboard.overview')}
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
-              {t('common.welcome')}, {user?.username}!
-            </p>
+        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br opacity-10 rounded-bl-full z-0"
+          style={{ background: `linear-gradient(to bottom right, var(--${color}-500), var(--${color}-600))` }}
+        ></div>
+        
+        <div className="relative z-10 flex flex-col">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{title}</p>
+            <div className={`flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br ${colorClasses[color]} text-white shadow-lg`}>
+              {icon}
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800 dark:text-white">{value}</p>
+          <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <ChevronRight className="h-4 w-4 text-gray-400" />
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
+  // Мобильное меню
+  const MobileMenu = () => (
+    <AnimatePresence>
+      {isMobileMenuOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black z-40 lg:hidden"
+          />
+          <motion.div
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 shadow-xl z-50 overflow-y-auto"
+          >
+            <div className="p-4 flex flex-col h-full">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  TRADEPO
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <Avatar className="h-10 w-10 border-2 border-indigo-500/20">
+                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'U'}`} />
+                    <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                      {user?.username?.substring(0, 2).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{user?.username || 'User'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email || 'user@example.com'}</p>
+                  </div>
+                </div>
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 p-3 rounded-lg">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{t('dashboard.balance')}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(user?.balance || 0)}</p>
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-1">
+                <motion.div initial="hidden" animate="visible" className="space-y-1">
+                  {navItems.map((item, i) => (
+                    <motion.div
+                      key={item.id}
+                      custom={i}
+                      variants={menuItemVariants}
+                    >
+                      <Button
+                        variant={activeTab === item.id ? "default" : "ghost"}
+                        className={cn(
+                          "w-full justify-start text-left",
+                          activeTab === item.id 
+                            ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white" 
+                            : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                        )}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <span className="mr-2">{item.icon}</span>
+                        {item.label}
+                        {item.badge && (
+                          <Badge variant="outline" className="ml-auto bg-white/20 text-white">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </Button>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </div>
+
+              <div className="mt-auto space-y-2">
+                <Button variant="outline" className="w-full justify-start text-left">
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  {t('common.help')}
+                </Button>
+                <Button variant="outline" className="w-full justify-start text-left text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20" onClick={logout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {t('auth.logout')}
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+
+  // Функция для получения контента по активной вкладке
+  const getTabContent = () => {
+    switch (activeTab) {
+      case "balance":
+        return <UserBalanceCard user={user} />;
+      case "deposits":
+        return <UserDeposits deposits={depositsData} />;
+      case "transactions":
+        return <UserTransactions transactions={transactionsData} />;
+      case "referrals":
+        return <UserReferrals referrals={referralsData} user={user} />;
+      case "settings":
+        return <UserSettings user={user} />;
+      default:
+        return <UserBalanceCard user={user} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20 lg:pt-6">
+      <MobileMenu />
+      
+      <div className="container mx-auto px-4 py-6">
+        {/* Мобильная шапка */}
+        <div className="lg:hidden mb-6 flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="icon"
+            className="bg-white dark:bg-gray-800 shadow-sm"
+            onClick={() => setIsMobileMenuOpen(true)}
+          >
+            <ChevronRight className="h-5 w-5 rotate-180" />
+          </Button>
+          
+          <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            TRADEPO
+          </h1>
+          
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="icon" className="bg-white dark:bg-gray-800 shadow-sm relative">
+              <Bell className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                3
+              </span>
+            </Button>
+            
+            <Avatar className="h-9 w-9 border-2 border-indigo-500/20">
+              <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'U'}`} />
+              <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                {user?.username?.substring(0, 2).toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
           </div>
         </div>
         
-        <div className="grid grid-cols-1 gap-6">
-          <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center px-4">
-                <div className="w-full border-t dark:border-gray-700"></div>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Боковое меню (только на десктопе) */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="hidden lg:block w-64 shrink-0"
+          >
+            <div className="sticky top-6 space-y-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4">
+                <div className="flex items-center space-x-3 mb-4">
+                  <Avatar className="h-10 w-10 border-2 border-indigo-500/20">
+                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'U'}`} />
+                    <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                      {user?.username?.substring(0, 2).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{user?.username || 'User'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email || 'user@example.com'}</p>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 p-3 rounded-lg mb-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{t('dashboard.balance')}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(user?.balance || 0)}</p>
+                </div>
+                
+                <div className="space-y-1">
+                  <motion.div initial="hidden" animate="visible" className="space-y-1">
+                    {navItems.map((item, i) => (
+                      <motion.div
+                        key={item.id}
+                        custom={i}
+                        variants={menuItemVariants}
+                      >
+                        <Button
+                          variant={activeTab === item.id ? "default" : "ghost"}
+                          className={cn(
+                            "w-full justify-start text-left relative overflow-hidden group",
+                            activeTab === item.id 
+                              ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white" 
+                              : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                          )}
+                          onClick={() => setActiveTab(item.id)}
+                        >
+                          {activeTab !== item.id && (
+                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/0 to-purple-400/0 group-hover:from-indigo-400/5 group-hover:to-purple-400/5 transition-colors duration-300"></div>
+                          )}
+                          <span className="mr-2">{item.icon}</span>
+                          {item.label}
+                          {item.badge && (
+                            <Badge variant="outline" className={cn(
+                              "ml-auto",
+                              activeTab === item.id 
+                                ? "bg-white/20 text-white" 
+                                : "bg-gray-100 dark:bg-gray-800"
+                            )}>
+                              {item.badge}
+                            </Badge>
+                          )}
+                        </Button>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </div>
               </div>
-              <TabsList className="relative bg-transparent flex justify-start space-x-2 overflow-x-auto pb-2 scrollbar-hide">
-                <TabsTrigger 
-                  value="overview" 
-                  className="flex items-center gap-2 rounded-md px-3 py-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
-                >
-                  <LayoutDashboard className="h-4 w-4" />
-                  <span>{t('dashboard.overview')}</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="deposits" 
-                  className="flex items-center gap-2 rounded-md px-3 py-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
-                >
-                  <PiggyBank className="h-4 w-4" />
-                  <span>{t('dashboard.deposits')}</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="transactions" 
-                  className="flex items-center gap-2 rounded-md px-3 py-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
-                >
-                  <BarChart4 className="h-4 w-4" />
-                  <span>{t('dashboard.transactions')}</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="referrals" 
-                  className="flex items-center gap-2 rounded-md px-3 py-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
-                >
-                  <Users className="h-4 w-4" />
-                  <span>{t('dashboard.referrals')}</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="settings" 
-                  className="flex items-center gap-2 rounded-md px-3 py-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white"
-                >
-                  <Settings className="h-4 w-4" />
-                  <span>{t('dashboard.settings')}</span>
-                </TabsTrigger>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-4">
+                <div className="space-y-2">
+                  <Button variant="outline" className="w-full justify-start text-left">
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    {t('common.help')}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start text-left text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                    onClick={logout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {t('auth.logout')}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+          
+          {/* Основной контент */}
+          <div className="flex-1">
+            <motion.div
+              variants={headerVariants}
+              initial="hidden"
+              animate="visible"
+              className="mb-6"
+            >
+              <div className="hidden lg:flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    {t('dashboard.personalAccount')}
+                  </h1>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <Button variant="outline" size="icon" className="bg-white dark:bg-gray-800 shadow-sm relative">
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                      3
+                    </span>
+                  </Button>
+                  
+                  <Button variant="default" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    {t('deposit.title')}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Быстрая статистика */}
+            <div className="mb-8">
+              <QuickStats />
+            </div>
+            
+            {/* Мобильные вкладки */}
+            <div className="lg:hidden mb-6">
+              <TabsList className="w-full grid grid-cols-5 h-14 bg-white dark:bg-gray-800 shadow-md rounded-xl">
+                {navItems.map((item) => (
+                  <TabsTrigger
+                    key={item.id}
+                    value={item.id}
+                    className="data-[state=active]:shadow-none data-[state=active]:bg-transparent relative overflow-hidden"
+                    onClick={() => setActiveTab(item.id)}
+                  >
+                    <div className="flex flex-col items-center">
+                      {item.icon}
+                      <span className="text-xs mt-1">{item.label}</span>
+                    </div>
+                    {activeTab === item.id && (
+                      <motion.div
+                        layoutId="activeIndicator"
+                        className="absolute bottom-0 h-0.5 w-10 bg-gradient-to-r from-indigo-600 to-purple-600"
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </div>
-          
-            <TabsContent value="overview" className="space-y-6 mt-6">
-              {/* Обзор баланса */}
-              <UserBalanceCard
-                balance={user?.balance || 0}
-                totalProfit={250}
-                totalInvested={1500}
-                onDeposit={handleDeposit}
-                onWithdraw={handleWithdraw}
-              />
-              
-              {/* Активные депозиты */}
-              <UserDeposits
-                deposits={demoDeposits}
-                onNewDeposit={handleNewDeposit}
-              />
-              
-              {/* История транзакций */}
-              <UserTransactions
-                transactions={demoTransactions.slice(0, 3)}
-                onViewAll={() => setActiveTab("transactions")}
-              />
-              
-              {/* Статистика */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/40 rounded-lg p-6 shadow-sm border border-indigo-100 dark:border-indigo-900"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">{t('dashboard.deposits')}</h3>
-                    <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-md">
-                      <PiggyBank className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                    </div>
-                  </div>
-                  <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-gray-50">
-                    {demoDeposits.length}
-                  </p>
-                  <div className="flex items-center text-green-600 dark:text-green-400 mt-1">
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                    <span className="text-sm">
-                      +25% {t('admin.for24Hours')}
-                    </span>
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/40 dark:to-emerald-950/40 rounded-lg p-6 shadow-sm border border-green-100 dark:border-green-900"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">{t('dashboard.earned')}</h3>
-                    <div className="p-2 bg-green-100 dark:bg-green-900/50 rounded-md">
-                      <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    </div>
-                  </div>
-                  <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-gray-50">
-                    $250
-                  </p>
-                  <div className="flex items-center text-green-600 dark:text-green-400 mt-1">
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                    <span className="text-sm">
-                      +12% {t('admin.for24Hours')}
-                    </span>
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-950/40 dark:to-fuchsia-950/40 rounded-lg p-6 shadow-sm border border-purple-100 dark:border-purple-900"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">{t('dashboard.referrals')}</h3>
-                    <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-md">
-                      <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                    </div>
-                  </div>
-                  <p className="text-3xl font-bold mt-2 text-gray-900 dark:text-gray-50">
-                    {demoReferrals.length}
-                  </p>
-                  <div className="flex items-center text-green-600 dark:text-green-400 mt-1">
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                    <span className="text-sm">
-                      +33% {t('admin.for24Hours')}
-                    </span>
-                  </div>
-                </motion.div>
-              </div>
-            </TabsContent>
             
-            <TabsContent value="deposits" className="space-y-6 mt-6">
-              <UserDeposits
-                deposits={demoDeposits}
-                onNewDeposit={handleNewDeposit}
-              />
-            </TabsContent>
-            
-            <TabsContent value="transactions" className="space-y-6 mt-6">
-              <UserTransactions
-                transactions={demoTransactions}
-              />
-            </TabsContent>
-            
-            <TabsContent value="referrals" className="space-y-6 mt-6">
-              <UserReferrals
-                referralCode={user?.referralCode || "TRADEPO2025"}
-                referrals={demoReferrals}
-                totalEarned={62.70}
-              />
-            </TabsContent>
-            
-            <TabsContent value="settings" className="space-y-6 mt-6">
-              <UserSettings />
-            </TabsContent>
-          </Tabs>
+            {/* Основной контент */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6"
+              >
+                {getTabContent()}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,412 +1,466 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { 
-  ArrowDown, 
   ArrowUp, 
-  Clock, 
-  CreditCard, 
-  DollarSign, 
-  MoreHorizontal, 
-  Search, 
   TrendingUp, 
-  Users 
+  UserPlus, 
+  Search, 
+  ChevronLeft, 
+  ChevronRight,
+  Calendar,
+  Download,
+  Filter,
+  Clock
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
-interface Transaction {
-  id: number;
-  type: "deposit" | "withdraw" | "profit" | "referral";
-  amount: number;
-  status: "pending" | "completed" | "rejected";
-  date: Date;
-  description?: string;
-}
+// Анимации для карточек
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.05,
+      duration: 0.4,
+      ease: [0.22, 1, 0.36, 1]
+    }
+  })
+};
 
 interface UserTransactionsProps {
-  transactions: Transaction[];
-  onViewAll?: () => void;
+  transactions: any[];
 }
 
-export default function UserTransactions({ 
-  transactions = [], 
-  onViewAll 
-}: UserTransactionsProps) {
+export default function UserTransactions({ transactions = [] }: UserTransactionsProps) {
   const { t } = useTranslation();
-  
-  // Форматирование чисел для отображения с 2 знаками после запятой
-  const formatCurrency = (value: number) => {
+  const [activeTab, setActiveTab] = useState("all");
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [period, setPeriod] = useState("all");
+  const [sortBy, setSortBy] = useState("date-desc");
+  const itemsPerPage = 10;
+
+  // Форматирование даты
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  // Форматирование времени
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('ru-RU', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Форматирование валюты
+  const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value);
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
   };
-  
-  // Функция для форматирования даты
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('ru-RU', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
-  };
-  
-  // Получение типа транзакции на русском
-  const getTypeText = (type: string) => {
+
+  // Фильтрация транзакций
+  const filteredTransactions = transactions.filter((transaction) => {
+    // Фильтр по типу
+    if (activeTab !== "all" && transaction.type !== activeTab) {
+      return false;
+    }
+
+    // Фильтр по поиску
+    if (search && !transaction.description?.toLowerCase().includes(search.toLowerCase())) {
+      return false;
+    }
+
+    // Фильтр по периоду
+    if (period !== "all") {
+      const now = new Date();
+      const transactionDate = new Date(transaction.createdAt);
+      const daysDiff = Math.floor((now.getTime() - transactionDate.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (period === "today" && daysDiff > 0) return false;
+      if (period === "week" && daysDiff > 7) return false;
+      if (period === "month" && daysDiff > 30) return false;
+    }
+
+    return true;
+  });
+
+  // Сортировка транзакций
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => {
+    if (sortBy === "date-desc") {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    if (sortBy === "date-asc") {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
+    if (sortBy === "amount-desc") {
+      return b.amount - a.amount;
+    }
+    if (sortBy === "amount-asc") {
+      return a.amount - b.amount;
+    }
+    return 0;
+  });
+
+  // Пагинация
+  const totalPages = Math.ceil(sortedTransactions.length / itemsPerPage);
+  const paginatedTransactions = sortedTransactions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Получение иконки для типа транзакции
+  const getTransactionIcon = (type: string) => {
     switch (type) {
-      case 'deposit':
-        return t('dashboard.deposit');
-      case 'withdraw':
-        return t('dashboard.withdraw');
-      case 'profit':
-        return t('dashboard.profit');
-      case 'referral':
-        return t('dashboard.referral');
+      case "deposit":
+        return <ArrowUp className="h-4 w-4" />;
+      case "withdraw":
+        return <ArrowUp className="h-4 w-4 transform rotate-180" />;
+      case "profit":
+        return <TrendingUp className="h-4 w-4" />;
+      case "referral":
+        return <UserPlus className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
+    }
+  };
+
+  // Получение цвета для типа транзакции
+  const getTransactionColor = (type: string) => {
+    switch (type) {
+      case "deposit":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+      case "withdraw":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+      case "profit":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+      case "referral":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+    }
+  };
+
+  // Получение цвета для статуса транзакции
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+      case "pending":
+        return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
+      case "rejected":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+    }
+  };
+
+  // Получение имени типа транзакции
+  const getTransactionTypeName = (type: string) => {
+    switch (type) {
+      case "deposit":
+        return t('transaction.deposit');
+      case "withdraw":
+        return t('transaction.withdrawal');
+      case "profit":
+        return t('transaction.profit');
+      case "referral":
+        return t('transaction.referral');
       default:
         return type;
     }
   };
-  
-  // Получение иконки для типа транзакции
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'deposit':
-        return <ArrowDown className="h-4 w-4" />;
-      case 'withdraw':
-        return <ArrowUp className="h-4 w-4" />;
-      case 'profit':
-        return <TrendingUp className="h-4 w-4" />;
-      case 'referral':
-        return <Users className="h-4 w-4" />;
-      default:
-        return <DollarSign className="h-4 w-4" />;
-    }
-  };
-  
-  // Получение цвета для типа транзакции
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'deposit':
-        return 'text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'withdraw':
-        return 'text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400';
-      case 'profit':
-        return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
-      case 'referral':
-        return 'text-purple-600 bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400';
-      default:
-        return 'text-gray-600 bg-gray-100 dark:bg-gray-800 dark:text-gray-400';
-    }
-  };
-  
-  // Получение цвета для статуса транзакции
-  const getStatusVariant = (status: string) => {
+
+  // Получение имени статуса транзакции
+  const getStatusName = (status: string) => {
     switch (status) {
-      case 'completed':
-        return "bg-green-500 hover:bg-green-600";
-      case 'pending':
-        return "bg-yellow-500 hover:bg-yellow-600";
-      case 'rejected':
-        return "bg-red-500 hover:bg-red-600";
+      case "completed":
+        return t('transaction.completed');
+      case "pending":
+        return t('transaction.pending');
+      case "rejected":
+        return t('transaction.rejected');
       default:
-        return "bg-gray-500 hover:bg-gray-600";
-    }
-  };
-  
-  // Получение значка для статуса транзакции
-  const getStatusBadge = (status: string) => {
-    let variant = 'default';
-    
-    switch (status) {
-      case 'completed':
-        variant = 'default';
-        return (
-          <Badge className="bg-green-500 hover:bg-green-600">
-            {t('dashboard.completed')}
-          </Badge>
-        );
-      case 'pending':
-        variant = 'default';
-        return (
-          <Badge className="bg-yellow-500 hover:bg-yellow-600">
-            <Clock className="mr-1 h-3 w-3" />
-            {t('dashboard.pending')}
-          </Badge>
-        );
-      case 'rejected':
-        variant = 'destructive';
-        return (
-          <Badge variant={variant}>
-            {t('dashboard.rejected')}
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant={variant}>
-            {status}
-          </Badge>
-        );
+        return status;
     }
   };
 
-  return (
+  // Компонент для пустого состояния
+  const EmptyState = () => (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="text-center py-12"
     >
-      <Card className="border dark:border-gray-700">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-xl">{t('dashboard.transactionHistory')}</CardTitle>
-            <CardDescription>
-              {t('dashboard.transactionsDesc')}
-            </CardDescription>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="border-gray-300 text-gray-600 dark:border-gray-600 dark:text-gray-400"
-              onClick={onViewAll}
-            >
-              {t('dashboard.viewAll')}
-            </Button>
-          </div>
-        </CardHeader>
+      <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+        <Clock className="h-8 w-8 text-gray-400" />
+      </div>
+      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+        {t('transactions.noTransactionsYet')}
+      </h3>
+      <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+        {t('transactions.noTransactionsDescription')}
+      </p>
+    </motion.div>
+  );
+
+  // Компонент для заголовка таблицы
+  const TableHeader = () => (
+    <div className="grid grid-cols-12 gap-4 border-b border-gray-200 dark:border-gray-700 pb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+      <div className="col-span-3 md:col-span-2">{t('transactions.type')}</div>
+      <div className="col-span-4 md:col-span-3">{t('transactions.date')}</div>
+      <div className="col-span-3 md:col-span-2 text-right">{t('transactions.amount')}</div>
+      <div className="hidden md:block md:col-span-3">{t('transactions.description')}</div>
+      <div className="col-span-2 md:col-span-2 text-right">{t('transactions.status')}</div>
+    </div>
+  );
+
+  // Компонент для строки таблицы
+  const TransactionRow = ({ transaction, index }: { transaction: any; index: number }) => {
+    const isPositive = transaction.type !== "withdraw";
+
+    return (
+      <motion.div
+        variants={cardVariants}
+        initial="hidden"
+        animate="visible"
+        custom={index}
+        className="grid grid-cols-12 gap-4 py-3 border-b border-gray-100 dark:border-gray-800 text-sm"
+      >
+        <div className="col-span-3 md:col-span-2 flex items-center">
+          <Badge 
+            variant="outline"
+            className={cn("flex items-center gap-1 capitalize", getTransactionColor(transaction.type))}
+          >
+            {getTransactionIcon(transaction.type)}
+            <span className="hidden md:inline">{getTransactionTypeName(transaction.type)}</span>
+          </Badge>
+        </div>
         
-        <CardContent>
-          <div className="flex flex-col space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                <Input
-                  type="search"
-                  placeholder={t('dashboard.searchTransactions')}
-                  className="pl-8 bg-white dark:bg-gray-800"
-                />
-              </div>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="shrink-0 border-gray-300 dark:border-gray-600">
-                    <span>{t('dashboard.filter')}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem className="flex items-center">
-                    <ArrowDown className="mr-2 h-4 w-4" />
-                    {t('dashboard.deposit')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center">
-                    <ArrowUp className="mr-2 h-4 w-4" />
-                    {t('dashboard.withdraw')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center">
-                    <TrendingUp className="mr-2 h-4 w-4" />
-                    {t('dashboard.profit')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center">
-                    <Users className="mr-2 h-4 w-4" />
-                    {t('dashboard.referral')}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="flex items-center">
-                    <Clock className="mr-2 h-4 w-4" />
-                    {t('dashboard.pending')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+        <div className="col-span-4 md:col-span-3 flex flex-col justify-center">
+          <span className="text-gray-900 dark:text-gray-100 font-medium">
+            {formatDate(transaction.createdAt)}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {formatTime(transaction.createdAt)}
+          </span>
+        </div>
+        
+        <div className="col-span-3 md:col-span-2 flex items-center justify-end">
+          <span className={`font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+            {isPositive ? '+' : '-'}{formatCurrency(transaction.amount)}
+          </span>
+        </div>
+        
+        <div className="hidden md:flex md:col-span-3 items-center">
+          <span className="text-gray-700 dark:text-gray-300 truncate">
+            {transaction.description || "-"}
+          </span>
+        </div>
+        
+        <div className="col-span-2 md:col-span-2 flex items-center justify-end">
+          <Badge className={cn("capitalize", getStatusColor(transaction.status))}>
+            {getStatusName(transaction.status)}
+          </Badge>
+        </div>
+      </motion.div>
+    );
+  };
+
+  // Компонент для пагинации
+  const Pagination = () => (
+    <div className="flex items-center justify-between">
+      <div className="text-sm text-gray-500 dark:text-gray-400">
+        {t('transactions.showing')} {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredTransactions.length)} {t('transactions.of')} {filteredTransactions.length}
+      </div>
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <h2 className="text-2xl font-bold">{t('dashboard.transactions')}</h2>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder={t('transactions.search')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 w-full"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Select value={period} onValueChange={setPeriod}>
+              <SelectTrigger className="w-[130px]">
+                <Calendar className="h-4 w-4 mr-2" />
+                <SelectValue placeholder={t('transactions.period')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('transactions.allTime')}</SelectItem>
+                <SelectItem value="today">{t('transactions.today')}</SelectItem>
+                <SelectItem value="week">{t('transactions.thisWeek')}</SelectItem>
+                <SelectItem value="month">{t('transactions.thisMonth')}</SelectItem>
+              </SelectContent>
+            </Select>
             
-            {transactions.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
-                  <CreditCard className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{t('transactions.sortBy')}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setSortBy("date-desc")}>
+                  {t('transactions.dateNewest')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("date-asc")}>
+                  {t('transactions.dateOldest')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("amount-desc")}>
+                  {t('transactions.amountHighest')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortBy("amount-asc")}>
+                  {t('transactions.amountLowest')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t('transactions.exportData')}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+      </div>
+
+      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="all">
+            {t('transactions.all')}
+          </TabsTrigger>
+          <TabsTrigger value="deposit">
+            {t('transaction.deposits')}
+          </TabsTrigger>
+          <TabsTrigger value="withdraw">
+            {t('transaction.withdrawals')}
+          </TabsTrigger>
+          <TabsTrigger value="profit">
+            {t('transaction.profits')}
+          </TabsTrigger>
+          <TabsTrigger value="referral">
+            {t('transaction.referrals')}
+          </TabsTrigger>
+        </TabsList>
+
+        <Card>
+          <CardHeader className="pb-0">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Clock className="h-5 w-5 text-blue-500" />
+              {t('transactions.history')}
+            </CardTitle>
+            <CardDescription>
+              {t('transactions.historyDescription')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {paginatedTransactions.length > 0 ? (
+              <div className="space-y-4">
+                <TableHeader />
+                <div className="space-y-1">
+                  {paginatedTransactions.map((transaction, index) => (
+                    <TransactionRow 
+                      key={transaction.id} 
+                      transaction={transaction} 
+                      index={index} 
+                    />
+                  ))}
                 </div>
-                <h3 className="text-lg font-medium mb-2">{t('dashboard.noTransactions')}</h3>
-                <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                  {t('dashboard.noTransactionsDesc')}
-                </p>
               </div>
             ) : (
-              <div className="rounded-md border dark:border-gray-700">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50 dark:bg-gray-800">
-                      <TableHead className="w-[100px]">{t('dashboard.type')}</TableHead>
-                      <TableHead>{t('dashboard.amount')}</TableHead>
-                      <TableHead className="hidden md:table-cell">{t('dashboard.date')}</TableHead>
-                      <TableHead className="hidden sm:table-cell">{t('dashboard.status')}</TableHead>
-                      <TableHead className="text-right w-[50px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {/* Демонстрационные данные для отображения */}
-                    {[
-                      {
-                        id: 1,
-                        type: 'profit' as const,
-                        amount: 15.25,
-                        status: 'completed' as const,
-                        date: new Date(2025, 4, 24, 10, 30),
-                        description: 'Ежедневная прибыль'
-                      },
-                      {
-                        id: 2,
-                        type: 'deposit' as const,
-                        amount: 1000,
-                        status: 'completed' as const,
-                        date: new Date(2025, 4, 15, 14, 25),
-                        description: 'Пополнение счета'
-                      },
-                      {
-                        id: 3,
-                        type: 'withdraw' as const,
-                        amount: 500,
-                        status: 'pending' as const,
-                        date: new Date(2025, 4, 25, 9, 15),
-                        description: 'Вывод средств'
-                      },
-                      {
-                        id: 4,
-                        type: 'referral' as const,
-                        amount: 50,
-                        status: 'completed' as const,
-                        date: new Date(2025, 4, 20, 18, 45),
-                        description: 'Реферальное вознаграждение'
-                      },
-                      {
-                        id: 5,
-                        type: 'withdraw' as const,
-                        amount: 200,
-                        status: 'rejected' as const,
-                        date: new Date(2025, 4, 18, 16, 10),
-                        description: 'Вывод средств'
-                      }
-                    ].map((transaction) => (
-                      <TableRow key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                        <TableCell>
-                          <div className="flex items-center">
-                            <span className={cn(
-                              "flex items-center justify-center w-8 h-8 rounded-full mr-2",
-                              getTypeColor(transaction.type)
-                            )}>
-                              {getTypeIcon(transaction.type)}
-                            </span>
-                            <span className="hidden sm:inline">
-                              {getTypeText(transaction.type)}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className={cn(
-                              "font-medium",
-                              transaction.type === 'withdraw' ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
-                            )}>
-                              {transaction.type === 'withdraw' ? '-' : '+'}{formatCurrency(transaction.amount)}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
-                              {transaction.description}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell text-gray-500 dark:text-gray-400">
-                          {formatDate(transaction.date)}
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {getStatusBadge(transaction.status)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Open menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                {t('dashboard.viewDetails')}
-                              </DropdownMenuItem>
-                              {transaction.status === 'pending' && (
-                                <>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-red-600 dark:text-red-400">
-                                    {t('dashboard.cancel')}
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              <EmptyState />
             )}
-          </div>
-        </CardContent>
-        
-        {transactions.length > 0 && (
-          <CardFooter className="border-t px-6 py-4 flex justify-between items-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t('dashboard.showing')} <span className="font-medium">5</span> {t('dashboard.of')} <span className="font-medium">24</span> {t('dashboard.transactions')}
-            </p>
-            
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-gray-300 dark:border-gray-600"
-                disabled={true}
-              >
-                {t('common.previous')}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-gray-300 dark:border-gray-600"
-              >
-                {t('common.next')}
-              </Button>
-            </div>
-          </CardFooter>
-        )}
-      </Card>
-    </motion.div>
+          </CardContent>
+          {paginatedTransactions.length > 0 && (
+            <CardFooter className="border-t pt-4">
+              <Pagination />
+            </CardFooter>
+          )}
+        </Card>
+      </Tabs>
+    </div>
   );
 }

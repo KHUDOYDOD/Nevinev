@@ -28,6 +28,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
@@ -89,17 +90,16 @@ const UserSettings = ({ user = {} }) => {
   // Мутация для обновления профиля
   const updateProfileMutation = useMutation({
     mutationFn: async (data: { email: string; username: string; fullName?: string }) => {
-      const response = await fetch("/api/user/profile", {
+      return fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error("Ошибка обновления профиля");
+        }
+        return response.json();
       });
-      
-      if (!response.ok) {
-        throw new Error("Ошибка обновления профиля");
-      }
-      
-      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/current"] });
@@ -121,17 +121,16 @@ const UserSettings = ({ user = {} }) => {
   // Мутация для смены пароля
   const changePasswordMutation = useMutation({
     mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
-      const response = await fetch("/api/user/password", {
+      return fetch("/api/user/password", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error("Ошибка смены пароля");
+        }
+        return response.json();
       });
-      
-      if (!response.ok) {
-        throw new Error("Ошибка смены пароля");
-      }
-      
-      return await response.json();
     },
     onSuccess: () => {
       toast({
@@ -155,17 +154,16 @@ const UserSettings = ({ user = {} }) => {
   // Мутация для настроек уведомлений
   const updateNotificationsMutation = useMutation({
     mutationFn: async (data: { emailNotifications: boolean; promotionalEmails: boolean; smsNotifications: boolean; securityAlerts: boolean }) => {
-      const response = await fetch("/api/user/notifications", {
+      return fetch("/api/user/notifications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error("Ошибка обновления настроек уведомлений");
+        }
+        return response.json();
       });
-      
-      if (!response.ok) {
-        throw new Error("Ошибка обновления настроек уведомлений");
-      }
-      
-      return await response.json();
     },
     onSuccess: () => {
       toast({

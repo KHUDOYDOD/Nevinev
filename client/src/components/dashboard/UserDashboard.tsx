@@ -167,10 +167,10 @@ export default function UserDashboard() {
       }, 800);
     };
 
-    // Запускаем анимацию волн для фона
+    // Запускаем анимацию волн для фона с оптимизированной частотой
     const waveAnimation = setInterval(() => {
       setWavePhase(prev => (prev + 0.01) % (2 * Math.PI));
-    }, 50);
+    }, 500);
 
     const pulseInterval = setInterval(pulseAnimation, 3000);
 

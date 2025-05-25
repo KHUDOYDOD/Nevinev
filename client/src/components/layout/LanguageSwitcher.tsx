@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageType } from "@/i18n/config";
 
 interface LanguageSwitcherProps {

@@ -136,9 +136,26 @@
   100% { transform: translateY(0px); }
 }
 
+@keyframes floatSideways {
+  0% { transform: translateX(0px); }
+  50% { transform: translateX(10px); }
+  100% { transform: translateX(0px); }
+}
+
+@keyframes floatWithRotate {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(3deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+
 @keyframes rotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@keyframes rotateReverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
 }
 
 @keyframes scaleIn {
@@ -146,59 +163,149 @@
   to { transform: scale(1); opacity: 1; }
 }
 
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+@keyframes scaleInFast {
+  0% { transform: scale(0.8); opacity: 0; }
+  70% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-/* Классы анимаций */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes glowPulse {
+  0% { box-shadow: 0 0 5px rgba(var(--primary-rgb), 0.3); }
+  50% { box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.8); }
+  100% { box-shadow: 0 0 5px rgba(var(--primary-rgb), 0.3); }
+}
+
+@keyframes backgroundShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes shakeX {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes dashOffset {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -100; }
+}
+
+@keyframes blinkShadow {
+  0%, 100% { text-shadow: 0 0 0px rgba(var(--primary-rgb), 0); }
+  50% { text-shadow: 0 0 10px rgba(var(--primary-rgb), 0.7); }
+}
+
+/* Классы анимаций с улучшенными параметрами */
 .animate-fade-in {
-  animation: fadeIn 0.5s ease forwards;
+  animation: fadeIn 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .animate-slide-up {
-  animation: slideInUp 0.5s ease forwards;
+  animation: slideInUp 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .animate-slide-right {
-  animation: slideInRight 0.5s ease forwards;
+  animation: slideInRight 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .animate-slide-left {
-  animation: slideInLeft 0.5s ease forwards;
+  animation: slideInLeft 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
 .animate-pulse {
-  animation: pulse 2s infinite ease-in-out;
+  animation: pulse 3s infinite ease-in-out;
 }
 
 .animate-shimmer {
   background: linear-gradient(90deg, 
     rgba(255,255,255,0) 0%, 
-    rgba(255,255,255,0.2) 50%, 
+    rgba(255,255,255,0.3) 50%, 
     rgba(255,255,255,0) 100%
   );
   background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  animation: shimmer 3s infinite;
 }
 
 .animate-float {
-  animation: float 3s infinite ease-in-out;
+  animation: float 4s infinite cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
+
+.animate-float-sideways {
+  animation: floatSideways 5s infinite cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
+
+.animate-float-rotate {
+  animation: floatWithRotate 6s infinite cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 
 .animate-rotate {
-  animation: rotate 8s linear infinite;
+  animation: rotate 12s linear infinite;
+}
+
+.animate-rotate-reverse {
+  animation: rotateReverse 15s linear infinite;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.5s ease forwards;
+  animation: scaleIn 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-scale-in-fast {
+  animation: scaleInFast 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .animate-bounce {
-  animation: bounce 2s infinite ease-in-out;
+  animation: bounce 3s infinite cubic-bezier(0.455, 0.03, 0.515, 0.955);
 }
 
-/* Классы для последовательной анимации */
+.animate-glow {
+  animation: glowPulse 3s infinite ease-in-out;
+}
+
+.animate-background-shift {
+  background-size: 200% 200%;
+  animation: backgroundShift 5s ease infinite;
+}
+
+.animate-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  animation: ripple 1.5s ease-out infinite;
+}
+
+.animate-shake-x {
+  animation: shakeX 0.8s ease;
+}
+
+.animate-dash {
+  stroke-dasharray: 20;
+  animation: dashOffset 20s linear infinite;
+}
+
+.animate-blink-shadow {
+  animation: blinkShadow 2s infinite ease-in-out;
+}
+
+/* Классы для последовательной анимации с большим разнообразием */
 .animate-delay-100 {
   animation-delay: 100ms;
 }
@@ -217,6 +324,43 @@
 
 .animate-delay-500 {
   animation-delay: 500ms;
+}
+
+.animate-delay-600 {
+  animation-delay: 600ms;
+}
+
+.animate-delay-700 {
+  animation-delay: 700ms;
+}
+
+.animate-delay-800 {
+  animation-delay: 800ms;
+}
+
+.animate-delay-900 {
+  animation-delay: 900ms;
+}
+
+.animate-delay-1000 {
+  animation-delay: 1000ms;
+}
+
+/* Различные скорости анимации */
+.animate-duration-fast {
+  animation-duration: 0.5s;
+}
+
+.animate-duration-normal {
+  animation-duration: 1s;
+}
+
+.animate-duration-slow {
+  animation-duration: 2s;
+}
+
+.animate-duration-very-slow {
+  animation-duration: 3s;
 }
 
 /* Современные стили карточек */

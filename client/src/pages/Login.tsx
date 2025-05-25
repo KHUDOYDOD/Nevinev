@@ -58,19 +58,14 @@ export default function Login() {
   const onSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
     try {
+      console.log("Submitting login form with:", values);
       await login({
         username: values.username,
         password: values.password,
       });
-      toast({
-        title: t("auth.login"),
-        description: t("dashboard.completed"),
-        variant: "success",
-      });
-      navigate("/dashboard");
+      // Навигация и тост обрабатываются в хуке useAuth
     } catch (error) {
       console.error("Login error:", error);
-      // Error toast is handled in the useAuth hook
     } finally {
       setIsLoading(false);
     }

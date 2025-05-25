@@ -115,27 +115,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { username, password } = req.body;
       
       // Проверим, может быть это логин вместо email
       let user = null;
-      // Сначала ищем по email
-      user = await storage.getUserByEmail(email);
       
-      // Если пользователь не найден по email, ищем по имени пользователя
+      // Специальная проверка для админа
+      if (username === 'Admin' && password === 'X12345x') {
+        // Создадим или получим администратора
+        let adminUser = await storage.getUserByUsername('Admin');
+        
+        if (!adminUser) {
+          // Если админа нет, создаем его
+          const hashedPassword = await bcrypt.hash('X12345x', 10);
+          adminUser = await storage.createUser({
+            username: 'Admin',
+            password: hashedPassword,
+            email: 'admin@tradepo.ru',
+            fullName: 'Administrator',
+            role: 'admin',
+            balance: 0,
+            language: 'ru',
+            referralCode: 'ADMIN',
+            referrerId: null,
+            createdAt: new Date()
+          });
+          console.log('Admin user created:', adminUser.id);
+        }
+        
+        // Генерируем токен для админа
+        const token = jwt.sign({ userId: adminUser.id }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+        
+        // Устанавливаем токен в куки
+        res.cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+        
+        // Возвращаем данные админа без пароля
+        const adminObj = adminUser as any;
+        const { password: _, ...adminWithoutPassword } = adminObj;
+        
+        return res.status(200).json(adminWithoutPassword);
+      }
+      
+      // Сначала ищем по имени пользователя
+      user = await storage.getUserByUsername(username);
+      
+      // Если пользователь не найден по имени, ищем по email
       if (!user) {
-        user = await storage.getUserByUsername(email);
+        user = await storage.getUserByEmail(username);
       }
       
       if (!user) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(401).json({ message: "Неверное имя пользователя или пароль" });
       }
       
       // Verify password - ensure user has password property
       const userPassword = (user as any).password || '';
       const isPasswordValid = await bcrypt.compare(password, userPassword);
       if (!isPasswordValid) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(401).json({ message: "Неверное имя пользователя или пароль" });
       }
       
       // Generate JWT token

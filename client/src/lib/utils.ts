@@ -15,6 +15,11 @@ export function formatCurrency(amount: number, locale: string = 'ru-RU', currenc
   }).format(amount);
 }
 
+// Format number with the given locale
+export function formatNumber(number: number, locale: string = 'ru-RU'): string {
+  return new Intl.NumberFormat(locale).format(number);
+}
+
 // Calculate investment profit
 export function calculateProfit(amount: number, rate: number, days: number): {
   dailyProfit: number;

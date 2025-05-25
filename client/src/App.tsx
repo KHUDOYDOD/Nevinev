@@ -1,3 +1,4 @@
+
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -16,8 +17,8 @@ import NotFound from "@/pages/not-found";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
         <ThemeProvider>
           <TooltipProvider>
             <Switch>
@@ -31,7 +32,7 @@ export default function App() {
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>
-      </QueryClientProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }

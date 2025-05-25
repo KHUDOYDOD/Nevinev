@@ -14,8 +14,8 @@ import {
   Facebook,
   Twitter,
   Mail,
-  Telegram,
-  Link
+  Link,
+  MessageCircle
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -541,7 +541,7 @@ const UserReferrals = ({ referrals = [], user = {} }) => {
                       className="justify-start h-12 border-cyan-100 dark:border-cyan-900/30 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
                       onClick={() => handleShare('telegram')}
                     >
-                      <Telegram className="h-5 w-5 text-cyan-500 dark:text-cyan-400 mr-2" />
+                      <MessageCircle className="h-5 w-5 text-cyan-500 dark:text-cyan-400 mr-2" />
                       Telegram
                     </Button>
                     <Button 

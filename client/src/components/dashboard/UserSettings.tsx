@@ -57,8 +57,21 @@ const itemVariants = {
   }
 };
 
+// Типы пользователя
+interface UserSettingsProps {
+  user: {
+    id?: number;
+    username?: string;
+    email?: string;
+    fullName?: string;
+    balance?: number;
+    referralCode?: string;
+    createdAt?: Date | string;
+  };
+}
+
 // Компонент настроек пользователя
-const UserSettings = ({ user = {} }) => {
+const UserSettings = ({ user = {} }: UserSettingsProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { logout } = useAuth();
@@ -184,17 +197,16 @@ const UserSettings = ({ user = {} }) => {
   // Мутация для смены языка
   const changeLanguageMutation = useMutation({
     mutationFn: async (data: { language: string }) => {
-      const response = await fetch("/api/user/language", {
+      return fetch("/api/user/language", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error("Ошибка смены языка");
+        }
+        return response.json();
       });
-      
-      if (!response.ok) {
-        throw new Error("Ошибка смены языка");
-      }
-      
-      return await response.json();
     },
     onSuccess: (_, variables) => {
       i18n.changeLanguage(variables.language);
@@ -216,16 +228,15 @@ const UserSettings = ({ user = {} }) => {
   // Мутация для удаления аккаунта
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/user/account", {
+      return fetch("/api/user/account", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" }
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error("Ошибка удаления аккаунта");
+        }
+        return response.json();
       });
-      
-      if (!response.ok) {
-        throw new Error("Ошибка удаления аккаунта");
-      }
-      
-      return await response.json();
     },
     onSuccess: () => {
       toast({
@@ -411,10 +422,10 @@ const UserSettings = ({ user = {} }) => {
                     <h3 className="text-xl font-bold mb-1">{fullName || username || 'User'}</h3>
                     <p className="text-gray-500 dark:text-gray-400 text-sm">{email || 'user@example.com'}</p>
                     <div className="flex items-center mt-2 text-sm">
-                      <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 hover:bg-indigo-100">
+                      <div className="flex items-center px-2 py-1 rounded-md bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 hover:bg-indigo-100 text-xs">
                         <UserCheck className="h-3 w-3 mr-1" />
                         {t('settings.accountVerified')}
-                      </Badge>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -459,7 +470,7 @@ const UserSettings = ({ user = {} }) => {
                     <div className="space-y-2">
                       <Label>{t('settings.memberSince')}</Label>
                       <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-md border border-gray-200 dark:border-gray-700">
-                        {new Date(user?.createdAt || Date.now()).toLocaleDateString('ru-RU', {
+                        {new Date(user?.createdAt || new Date()).toLocaleDateString('ru-RU', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric'

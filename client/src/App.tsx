@@ -16,8 +16,8 @@ import NotFound from "@/pages/not-found";
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <TooltipProvider>
             <Switch>

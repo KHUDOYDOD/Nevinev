@@ -44,6 +44,22 @@ export default function SettingsPage() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('profile');
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        await queryClient.prefetchQuery({ queryKey: ['/api/users/current'] });
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
 
   // Fetch user data
   const { data: userData, isLoading } = useQuery({

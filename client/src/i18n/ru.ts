@@ -53,20 +53,20 @@ export default {
     premium: 'Премиум',
     elite: 'Элит'
   },
-  
+
   hero: {
     title: 'Инвестируй умно. Получай прибыль за 24 часа.',
     subtitle: 'До 15% дохода в сутки',
     button: 'Начать инвестировать',
     learnMore: 'Узнать больше'
   },
-  
+
   stats: {
     invested: 'Инвестировано',
     paid: 'Выплачено',
     users: 'Пользователей'
   },
-  
+
   calculator: {
     title: 'Рассчитайте вашу прибыль',
     description: 'Используйте наш калькулятор, чтобы узнать потенциальный доход от ваших инвестиций на платформе TRADEPO.',
@@ -79,7 +79,7 @@ export default {
     totalAmount: 'Итоговая сумма',
     investNow: 'Инвестировать сейчас'
   },
-  
+
   howItWorks: {
     title: 'Как это работает',
     description: 'Простой процесс инвестирования и получения прибыли на платформе TRADEPO.',
@@ -100,7 +100,7 @@ export default {
       description: 'Ежедневно наблюдайте за ростом вашего капитала и выводите средства в любой момент.'
     }
   },
-  
+
   tariffs: {
     title: 'Выберите свой тариф',
     description: 'Мы предлагаем различные инвестиционные планы для достижения ваших финансовых целей.',
@@ -148,7 +148,7 @@ export default {
       button: 'Выбрать тариф'
     }
   },
-  
+
   activity: {
     title: 'Активность платформы',
     description: 'Следите за ростом нашей платформы в режиме реального времени.',
@@ -159,7 +159,7 @@ export default {
     profit: 'Прибыль',
     minutesAgo: 'минут назад'
   },
-  
+
   advantages: {
     title: 'Преимущества платформы',
     description: 'Почему тысячи инвесторов выбирают TRADEPO для своих инвестиций.',
@@ -180,14 +180,14 @@ export default {
       description: 'Профессиональная команда поддержки, готовая помочь в любое время.'
     }
   },
-  
+
   testimonials: {
     title: 'Отзывы инвесторов',
     description: 'Узнайте, что говорят о TRADEPO наши пользователи.',
     investor: 'Инвестор с',
     year: 'года'
   },
-  
+
   contact: {
     title: 'Остались вопросы?',
     description: 'Наша команда поддержки всегда готова помочь вам и ответить на любые вопросы.',
@@ -202,7 +202,7 @@ export default {
       button: 'Написать на Email'
     }
   },
-  
+
   footer: {
     description: 'Платформа для умных инвестиций с высокой ежедневной доходностью.',
     navigation: 'Навигация',
@@ -213,7 +213,7 @@ export default {
     copyright: '© 2023 TRADEPO.RU. Все права защищены.',
     contactInfo: 'Контактная информация'
   },
-  
+
   login: {
     title: 'Вход в систему',
     subtitle: 'Войдите в свой аккаунт или создайте новый',
@@ -225,7 +225,7 @@ export default {
     emailPlaceholder: 'Введите ваш email',
     passwordPlaceholder: 'Введите ваш пароль'
   },
-  
+
   register: {
     title: 'Регистрация',
     subtitle: 'Создайте новый аккаунт',
@@ -243,67 +243,91 @@ export default {
     confirmPasswordPlaceholder: 'Повторите пароль',
     referralCodePlaceholder: 'Введите реферальный код'
   },
-  
+
   dashboard: {
-    overview: 'Обзор аккаунта',
-    balance: 'Баланс',
-    activeDeposits: 'Активные депозиты',
-    totalProfit: 'Общая прибыль',
-    deposit: 'Пополнить',
-    withdraw: 'Вывести',
-    deposits: 'Депозиты',
-    transactions: 'Транзакции',
-    calculator: 'Калькулятор',
-    referrals: 'Рефералы',
-    settings: 'Настройки',
-    security: 'Безопасность',
-    depositDate: 'Дата создания',
-    dailyIncome: 'Ежедневный доход',
-    status: 'Статус',
-    transactionHistory: 'История операций',
-    viewAll: 'Посмотреть все операции',
-    referralProgram: 'Реферальная программа',
-    referralProgramDescription: 'Приглашайте друзей и получайте 0.1% от их инвестиций.',
-    yourReferralLink: 'Ваша реферальная ссылка:',
-    copy: 'Копировать',
-    copied: 'Скопировано',
-    linkCopied: 'Ссылка скопирована',
-    linkCopiedDesc: 'Реферальная ссылка скопирована в буфер обмена',
-    copyError: 'Не удалось скопировать ссылку',
-    invite: 'Пригласить',
-    inviteTitle: 'Приглашение в TRADEPO',
-    inviteText: 'Присоединяйся к TRADEPO и начни зарабатывать с первого дня!',
-    inviteFriends: 'Пригласить друзей',
-    noReferrals: 'У вас пока нет рефералов',
-    noReferralsDesc: 'Пригласите друзей и получайте бонусы от их инвестиций',
-    referralProgramNote: 'Вы получаете 0.1% от каждой инвестиции ваших рефералов.',
-    refList: 'Рефералов',
-    active: 'Активных',
-    inactive: 'Неактивный',
-    earned: 'Заработано',
-    username: 'Имя пользователя',
-    email: 'Email',
-    joinDate: 'Дата регистрации',
-    settingsDescription: 'Управление вашим профилем, безопасностью и предпочтениями',
-    profile: 'Профиль',
-    preferences: 'Предпочтения',
-    fullName: 'Полное имя',
-    fullNamePlaceholder: 'Введите ваше полное имя',
-    currentPassword: 'Текущий пароль',
-    newPassword: 'Новый пароль',
-    confirmPassword: 'Подтвердите пароль',
-    language: 'Язык интерфейса',
-    selectLanguage: 'Выберите язык',
-    theme: 'Тема оформления',
-    lightTheme: 'Светлая',
-    darkTheme: 'Тёмная',
-    profileUpdated: 'Профиль успешно обновлен',
-    passwordUpdated: 'Пароль успешно изменен',
-    languageChanged: 'Язык интерфейса изменен',
-    detailedStatistics: 'Подробная статистика',
-    saving: 'Сохранение...'
+    overview: {
+      title: 'Обзор аккаунта',
+      balance: 'Баланс',
+      deposit: 'Пополнить',
+      withdraw: 'Вывести',
+      activeDeposits: 'Активные депозиты',
+      totalProfit: 'Общая прибыль',
+      days: 'дней'
+    },
+
+    deposits: {
+      title: 'Активные депозиты',
+      tariff: 'Тариф',
+      amount: 'Сумма',
+      created: 'Дата создания',
+      dailyProfit: 'Ежедневный доход',
+      status: 'Статус',
+      active: 'Активный',
+      completed: 'Завершен',
+      noDeposits: 'У вас пока нет активных депозитов',
+      createDeposit: 'Создать депозит'
+    },
+
+    transactions: {
+      title: 'История операций',
+      date: 'Дата',
+      type: 'Тип',
+      amount: 'Сумма',
+      status: 'Статус',
+      deposit: 'Пополнение',
+      withdrawal: 'Вывод',
+      profit: 'Прибыль',
+      referral: 'Реферальный бонус',
+      pending: 'В обработке',
+      completed: 'Выполнено',
+      rejected: 'Отклонено',
+      viewAll: 'Показать все операции',
+      noTransactions: 'У вас пока нет операций'
+    },
+
+    referrals: {
+      title: 'Реферальная программа',
+      description: 'Приглашайте друзей и получайте 0.1% от их инвестиций',
+      yourLink: 'Ваша реферальная ссылка:',
+      copy: 'Копировать',
+      copied: 'Скопировано!',
+      referrals: 'Рефералы',
+      active: 'Активные',
+      earned: 'Заработано',
+      detailedStats: 'Подробная статистика',
+      noReferrals: 'У вас пока нет рефералов'
+    },
+
+    settings: {
+      title: 'Настройки профиля',
+      personalInfo: 'Личная информация',
+      fullName: 'Полное имя',
+      email: 'Email',
+      language: 'Язык интерфейса',
+      security: 'Безопасность',
+      currentPassword: 'Текущий пароль',
+      newPassword: 'Новый пароль',
+      confirmPassword: 'Подтвердите новый пароль',
+      save: 'Сохранить изменения'
+    },
+
+    withdraw: {
+      title: 'Вывод средств',
+      amount: 'Сумма вывода',
+      availableBalance: 'Доступный баланс:',
+      withdrawButton: 'Вывести средства',
+      success: 'Заявка на вывод успешно создана',
+      pending: 'Ваша заявка будет обработана администратором'
+    },
+
+    deposit: {
+      title: 'Пополнение счета',
+      amount: 'Сумма пополнения',
+      selectTariff: 'Выберите тариф',
+      minAmount: 'Минимальная сумма:',
+    },
   },
-  
+
   admin: {
     dashboard: 'Панель управления',
     users: 'Пользователи',
@@ -347,7 +371,7 @@ export default {
     pendingApproval: 'Ожидающие подтверждения заявки',
     activeTariffs: 'Активные тарифные планы'
   },
-  
+
   deposit: {
     title: 'Пополнение баланса',
     description: 'Выберите способ оплаты и сумму пополнения',
@@ -361,7 +385,7 @@ export default {
     minimumAmount: 'Минимальная сумма пополнения:',
     currency: '$'
   },
-  
+
   withdraw: {
     title: 'Вывод средств',
     description: 'Выберите способ вывода и сумму',
@@ -377,14 +401,14 @@ export default {
     withdrawalFee: 'Комиссия за вывод:',
     currency: '$'
   },
-  
+
   transactionTypes: {
     deposit: 'Пополнение',
     withdrawal: 'Вывод',
     profit: 'Начисление',
     referral: 'Реферальный бонус'
   },
-  
+
   transactionStatuses: {
     pending: 'Ожидание',
     completed: 'Выполнено',

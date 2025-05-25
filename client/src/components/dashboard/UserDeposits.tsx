@@ -402,13 +402,13 @@ const UserDeposits = ({ deposits = [] }) => {
       </div>
       <h3 className="text-lg font-semibold mb-1">
         {type === "deposits" 
-          ? t('deposit.noDeposits') 
-          : t('deposit.noHistory')}
+          ? "У вас пока нет активных депозитов" 
+          : "История отсутствует"}
       </h3>
       <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">
         {type === "deposits" 
-          ? t('deposit.noDepositsDesc') 
-          : t('deposit.noHistoryDesc')}
+          ? "Создайте свой первый депозит, чтобы начать зарабатывать" 
+          : "У вас пока нет истории транзакций"}
       </p>
       {type === "deposits" && (
         <Button 
@@ -417,7 +417,7 @@ const UserDeposits = ({ deposits = [] }) => {
           className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
         >
           <PlusCircle className="h-4 w-4 mr-2" />
-          {t('deposit.create')}
+          Создать депозит
         </Button>
       )}
     </motion.div>
@@ -519,7 +519,7 @@ const UserDeposits = ({ deposits = [] }) => {
               className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
             >
               <PlusCircle className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">{t('deposit.create')}</span>
+              <span className="hidden sm:inline">Создать депозит</span>
             </Button>
           </div>
         </div>

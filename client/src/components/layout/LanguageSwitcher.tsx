@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import { useLanguage } from "@/contexts/LanguageContext";
+
 import { LanguageType } from "@/i18n/config";
 
 interface LanguageSwitcherProps {
@@ -24,10 +24,11 @@ const LanguageSwitcher = ({ variant = "header" }: LanguageSwitcherProps) => {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Временно используем локальное состояние вместо контекста
-  const [currentLang, setCurrentLang] = useState<LanguageType>(
-    (localStorage.getItem("i18nextLng") as LanguageType) || "ru"
-  );
+  // Используем локальное состояние для хранения выбранного языка
+  const [currentLang, setCurrentLang] = useState<LanguageType>(() => {
+    const savedLang = localStorage.getItem("i18nextLng");
+    return (savedLang as LanguageType) || "ru";
+  });
 
   const languages: LanguageOption[] = [
     { code: "ru", label: "Русский" },
@@ -74,7 +75,7 @@ const LanguageSwitcher = ({ variant = "header" }: LanguageSwitcherProps) => {
           size="sm"
           className="flex items-center gap-1 h-8 px-2"
         >
-          <span>{currentLanguage?.code.toUpperCase()}</span>
+          <span>{currentLang.toUpperCase()}</span>
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -84,7 +85,7 @@ const LanguageSwitcher = ({ variant = "header" }: LanguageSwitcherProps) => {
             key={lang.code}
             onClick={() => handleLanguageChange(lang.code)}
             className={
-              language === lang.code ? "bg-muted font-medium" : "font-normal"
+              currentLang === lang.code ? "bg-muted font-medium" : "font-normal"
             }
           >
             {lang.label}

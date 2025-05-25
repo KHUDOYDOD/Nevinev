@@ -258,7 +258,11 @@ const UserBalanceCard = ({ user }) => {
             transition={{ duration: 0.5 }}
             className="text-2xl font-bold text-gray-900 dark:text-white"
           >
-            {t('dashboard.balance')}
+            {user?.language === 'en' ? 'Balance' : 
+              user?.language === 'tj' ? 'Баланс' : 
+              user?.language === 'kz' ? 'Баланс' : 
+              user?.language === 'uz' ? 'Balans' : 
+              'Баланс'}
           </motion.h2>
           
           <Tabs defaultValue="overview">
@@ -267,19 +271,31 @@ const UserBalanceCard = ({ user }) => {
                 value="overview"
                 className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
               >
-                {t('common.overview')}
+                {user?.language === 'en' ? 'Overview' : 
+                user?.language === 'tj' ? 'Намоиши умумӣ' : 
+                user?.language === 'kz' ? 'Шолу' : 
+                user?.language === 'uz' ? 'Umumiy koʻrinish' : 
+                'Обзор'}
               </TabsTrigger>
               <TabsTrigger
                 value="deposit"
                 className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
               >
-                {t('deposit.title')}
+                {user?.language === 'en' ? 'Deposit' : 
+                user?.language === 'tj' ? 'Пасандоз' : 
+                user?.language === 'kz' ? 'Салым' : 
+                user?.language === 'uz' ? 'Depozit' : 
+                'Пополнить'}
               </TabsTrigger>
               <TabsTrigger
                 value="withdraw"
                 className="rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
               >
-                {t('withdraw.title')}
+                {user?.language === 'en' ? 'Withdraw' : 
+                user?.language === 'tj' ? 'Бардошт' : 
+                user?.language === 'kz' ? 'Шығару' : 
+                user?.language === 'uz' ? 'Yechib olish' : 
+                'Вывод'}
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -296,8 +312,20 @@ const UserBalanceCard = ({ user }) => {
             >
               <motion.div variants={itemVariants} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
                 <div className="mb-6">
-                  <h3 className="text-xl font-semibold mb-2">{t('dashboard.balanceDetails')}</h3>
-                  <p className="text-gray-500 dark:text-gray-400">{t('dashboard.balanceDescription')}</p>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {user?.language === 'en' ? 'Balance Details' : 
+                    user?.language === 'tj' ? 'Маълумоти муфассал' : 
+                    user?.language === 'kz' ? 'Баланс туралы толық ақпарат' : 
+                    user?.language === 'uz' ? 'Balans tafsilotlari' : 
+                    'Детали баланса'}
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {user?.language === 'en' ? 'Your investment account summary and operations' : 
+                    user?.language === 'tj' ? 'Ҳисоботи ҳисоби сармоягузории шумо ва амалиётҳо' : 
+                    user?.language === 'kz' ? 'Сіздің инвестициялық шотыңыздың қорытындысы және операциялары' : 
+                    user?.language === 'uz' ? 'Sizning investitsiya hisobingiz va operatsiyalar' : 
+                    'Сводка по вашему инвестиционному счету и операциям'}
+                  </p>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -324,7 +352,11 @@ const UserBalanceCard = ({ user }) => {
                         onClick={() => setActiveTab("deposit")}
                       >
                         <ArrowDownRight className="h-4 w-4 mr-1" />
-                        {t('deposit.title')}
+                        {user?.language === 'en' ? 'Deposit' : 
+                        user?.language === 'tj' ? 'Пасандоз' : 
+                        user?.language === 'kz' ? 'Салым' : 
+                        user?.language === 'uz' ? 'Depozit' : 
+                        'Пополнить'}
                       </Button>
                       <Button 
                         variant="outline" 
@@ -333,7 +365,11 @@ const UserBalanceCard = ({ user }) => {
                         onClick={() => setActiveTab("withdraw")}
                       >
                         <ArrowUpRight className="h-4 w-4 mr-1" />
-                        {t('withdraw.title')}
+                        {user?.language === 'en' ? 'Withdraw' : 
+                        user?.language === 'tj' ? 'Бардошт' : 
+                        user?.language === 'kz' ? 'Шығару' : 
+                        user?.language === 'uz' ? 'Yechib olish' : 
+                        'Вывод'}
                       </Button>
                     </div>
                   </div>

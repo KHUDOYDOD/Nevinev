@@ -90,15 +90,15 @@ const UserDeposits = ({ deposits = [] }) => {
       setSelectedPlan(null);
       setIsOpenNewDepositDialog(false);
       toast({
-        title: t('success'),
-        description: t('deposit.successCreated'),
+        title: "Успешно",
+        description: "Депозит успешно создан",
         variant: "default"
       });
     },
     onError: () => {
       toast({
-        title: t('error'),
-        description: t('deposit.errorCreate'),
+        title: "Ошибка",
+        description: "Не удалось создать депозит. Пожалуйста, попробуйте позже",
         variant: "destructive"
       });
     }
@@ -433,7 +433,7 @@ const UserDeposits = ({ deposits = [] }) => {
     >
       <motion.div variants={itemVariants} className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-4 rounded-xl">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-gray-600 dark:text-gray-300">{t('deposit.activeDeposits')}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Активные депозиты</p>
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shadow-lg">
             <PiggyBank className="w-4 h-4" />
           </div>
@@ -441,13 +441,13 @@ const UserDeposits = ({ deposits = [] }) => {
         <p className="text-2xl font-bold text-gray-900 dark:text-white">{deposits?.length || 0}</p>
         <div className="flex items-center mt-1 text-green-600 dark:text-green-400 text-sm">
           <TrendingUp className="w-4 h-4 mr-1" />
-          <span>{t('deposit.totalWorking')}</span>
+          <span>Всего активно</span>
         </div>
       </motion.div>
       
       <motion.div variants={itemVariants} className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-4 rounded-xl">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-gray-600 dark:text-gray-300">{t('deposit.totalInvested')}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Всего инвестировано</p>
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 text-white flex items-center justify-center shadow-lg">
             <BadgeDollarSign className="w-4 h-4" />
           </div>

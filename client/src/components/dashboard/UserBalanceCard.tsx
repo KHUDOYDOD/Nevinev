@@ -391,8 +391,8 @@ const UserBalanceCard = ({ user }) => {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('deposit.title')}</CardTitle>
-                  <CardDescription>{t('deposit.description')}</CardDescription>
+                  <CardTitle>Пополнение счета</CardTitle>
+                  <CardDescription>Внесите средства на ваш инвестиционный счет</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">

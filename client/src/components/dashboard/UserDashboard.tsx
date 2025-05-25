@@ -130,15 +130,15 @@ export default function UserDashboard() {
   const [activeTab, setActiveTab] = useState("balance");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  
+
   // Пульсирующие анимации для счетчиков
   const pulseValue = useMotionValue(1);
   const pulse = useTransform(pulseValue, [0.98, 1], [0.98, 1]);
   const rotate = useMotionValue(0);
-  
+
   // Эффект волны для фона
   const [wavePhase, setWavePhase] = useState(0);
-  
+
   // Запросы к API для получения данных
   const { data: depositsData = [], isLoading: isDepositsLoading } = useQuery({
     queryKey: ["/api/user/deposits"],
@@ -158,7 +158,7 @@ export default function UserDashboard() {
   // Проверяем, что мы на клиенте для отображения аватара и анимаций
   useEffect(() => {
     setIsClient(true);
-    
+
     // Запускаем пульсирующую анимацию
     const pulseAnimation = () => {
       pulseValue.set(0.98);
@@ -166,22 +166,22 @@ export default function UserDashboard() {
         pulseValue.set(1);
       }, 800);
     };
-    
+
     // Запускаем анимацию волн для фона
     const waveAnimation = setInterval(() => {
       setWavePhase(prev => (prev + 0.01) % (2 * Math.PI));
     }, 50);
-    
+
     const pulseInterval = setInterval(pulseAnimation, 3000);
-    
+
     // Вращение для иконки обновления
     const rotateAnimation = () => {
       rotate.set(0);
       rotate.set(360, { duration: 1.5, ease: "easeInOut" });
     };
-    
+
     const rotateInterval = setInterval(rotateAnimation, 5000);
-    
+
     return () => {
       clearInterval(pulseInterval);
       clearInterval(waveAnimation);
@@ -294,7 +294,7 @@ export default function UserDashboard() {
       >
         <div className={`absolute top-0 right-0 w-24 h-24 rounded-bl-full opacity-20 ${bgColor} z-0`}></div>
         <div className="absolute -right-2 -top-2 w-12 h-12 rounded-full opacity-20 bg-gradient-to-br blur-xl"></div>
-        
+
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{title}</p>
@@ -308,14 +308,14 @@ export default function UserDashboard() {
               {icon}
             </motion.div>
           </div>
-          
+
           <motion.p 
             style={{ scale: pulse }}
             className="text-2xl font-bold text-gray-800 dark:text-white"
           >
             {value}
           </motion.p>
-          
+
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -539,7 +539,7 @@ export default function UserDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20 lg:pt-6 pb-10">
       <MobileMenu />
-      
+
       <div className="container mx-auto px-4 py-6">
         {/* Мобильная шапка с улучшенной анимацией */}
         <div className="lg:hidden mb-8 flex items-center justify-between">
@@ -557,7 +557,7 @@ export default function UserDashboard() {
               <Menu className="h-5 w-5" />
             </Button>
           </motion.div>
-          
+
           <motion.h1 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -566,7 +566,7 @@ export default function UserDashboard() {
           >
             TRADEPO
           </motion.h1>
-          
+
           <motion.div 
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -588,7 +588,7 @@ export default function UserDashboard() {
                 3
               </motion.span>
             </Button>
-            
+
             <Avatar className="h-10 w-10 border-2 border-indigo-500/20 ring-2 ring-indigo-100 dark:ring-indigo-900/30">
               {isClient && (
                 <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'U'}`} />
@@ -599,7 +599,7 @@ export default function UserDashboard() {
             </Avatar>
           </motion.div>
         </div>
-        
+
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Боковое меню (только на десктопе) с продвинутой анимацией */}
           <motion.div
@@ -648,7 +648,7 @@ export default function UserDashboard() {
                     </motion.p>
                   </div>
                 </div>
-                
+
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -691,7 +691,7 @@ export default function UserDashboard() {
                     </div>
                   </div>
                 </motion.div>
-                
+
                 <div className="space-y-2">
                   {navItems.map((item, i) => (
                     <motion.div
@@ -743,7 +743,7 @@ export default function UserDashboard() {
                   ))}
                 </div>
               </motion.div>
-              
+
               {/* Нижний блок с дополнительными функциями */}
               <motion.div
                 variants={cardVariants}
@@ -769,7 +769,7 @@ export default function UserDashboard() {
               </motion.div>
             </div>
           </motion.div>
-          
+
           {/* Основной контент с улучшенными анимациями */}
           <div className="flex-1">
             {/* Заголовок страницы */}
@@ -798,7 +798,7 @@ export default function UserDashboard() {
                     {new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 </div>
-                
+
                 <div className="flex items-center space-x-3">
                   <Button variant="outline" size="icon" className="bg-white dark:bg-gray-800 shadow-md rounded-xl h-11 w-11 relative">
                     <Bell className="h-5 w-5" />
@@ -811,7 +811,7 @@ export default function UserDashboard() {
                       3
                     </motion.span>
                   </Button>
-                  
+
                   <Button 
                     variant="default" 
                     className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 h-11 rounded-xl shadow-lg shadow-indigo-500/20"
@@ -822,7 +822,7 @@ export default function UserDashboard() {
                 </div>
               </div>
             </motion.div>
-            
+
             {/* Быстрая статистика */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -832,7 +832,7 @@ export default function UserDashboard() {
             >
               <QuickStats />
             </motion.div>
-            
+
             {/* Мобильные вкладки с анимацией */}
             <div className="lg:hidden mb-6">
               <motion.div
@@ -861,11 +861,12 @@ export default function UserDashboard() {
                         />
                       )}
                     </TabsTrigger>
-                  ))}
-                </TabsList>
+                    ))}
+                  </TabsList>
+                </Tabs>
               </motion.div>
             </div>
-            
+
             {/* Основной контент с анимированными переходами */}
             <AnimatePresence mode="wait">
               <motion.div

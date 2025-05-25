@@ -103,10 +103,10 @@ const ActivitySection = () => {
           transition={{ duration: 0.5 }}
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            {t("activity.title")}
+            Активность платформы
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            {t("activity.description")}
+            Следите за ростом нашей платформы в режиме реального времени.
           </p>
         </motion.div>
 
@@ -119,7 +119,7 @@ const ActivitySection = () => {
           >
             <Card>
               <CardHeader>
-                <CardTitle>{t("activity.newUsers")}</CardTitle>
+                <CardTitle>Новые пользователи</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <ScrollArea className="h-[320px]">
@@ -164,7 +164,7 @@ const ActivitySection = () => {
           >
             <Card>
               <CardHeader>
-                <CardTitle>{t("activity.newDeposits")}</CardTitle>
+                <CardTitle>Новые депозиты</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <ScrollArea className="h-[320px]">
@@ -185,7 +185,7 @@ const ActivitySection = () => {
                           <div className="ml-3 flex-1">
                             <p className="font-medium">{deposit.name}</p>
                             <p className="text-sm text-gray-500">
-                              {t("activity.tariff")} {deposit.plan}
+                              Тариф: {deposit.plan}
                             </p>
                           </div>
                           <div className="text-right">
@@ -213,7 +213,7 @@ const ActivitySection = () => {
           >
             <Card>
               <CardHeader>
-                <CardTitle>{t("activity.newWithdrawals")}</CardTitle>
+                <CardTitle>Последние выводы</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <ScrollArea className="h-[320px]">

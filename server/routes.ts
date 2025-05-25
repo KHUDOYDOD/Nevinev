@@ -141,7 +141,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Return user without password
-      const { password: _, ...userWithoutPassword } = user;
+      const userObj = user as any;
+      const { password: _, ...userWithoutPassword } = userObj;
       res.status(200).json(userWithoutPassword);
     } catch (error) {
       console.error("Login error:", error);
@@ -152,7 +153,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/auth/me", authenticateUser, async (req: any, res) => {
     try {
       // Return authenticated user without password
-      const { password, ...userWithoutPassword } = req.user;
+      const userObj = req.user as any;
+      const { password, ...userWithoutPassword } = userObj;
       res.status(200).json(userWithoutPassword);
     } catch (error) {
       console.error("Auth check error:", error);

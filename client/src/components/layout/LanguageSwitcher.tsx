@@ -22,8 +22,12 @@ interface LanguageOption {
 
 const LanguageSwitcher = ({ variant = "header" }: LanguageSwitcherProps) => {
   const { i18n } = useTranslation();
-  const { language, setLanguage } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Временно используем локальное состояние вместо контекста
+  const [currentLang, setCurrentLang] = useState<LanguageType>(
+    (localStorage.getItem("i18nextLng") as LanguageType) || "ru"
+  );
 
   const languages: LanguageOption[] = [
     { code: "ru", label: "Русский" },
@@ -35,11 +39,12 @@ const LanguageSwitcher = ({ variant = "header" }: LanguageSwitcherProps) => {
 
   const handleLanguageChange = (langCode: LanguageType) => {
     i18n.changeLanguage(langCode);
-    setLanguage(langCode);
+    setCurrentLang(langCode);
+    localStorage.setItem("i18nextLng", langCode);
     setIsOpen(false);
   };
 
-  const currentLanguage = languages.find((lang) => lang.code === language);
+  const selectedLanguage = languages.find((lang) => lang.code === currentLang);
 
   if (variant === "footer") {
     return (
@@ -49,7 +54,7 @@ const LanguageSwitcher = ({ variant = "header" }: LanguageSwitcherProps) => {
             key={lang.code}
             onClick={() => handleLanguageChange(lang.code)}
             className={`text-sm ${
-              language === lang.code
+              currentLang === lang.code
                 ? "text-white"
                 : "text-gray-400 hover:text-white"
             } transition`}

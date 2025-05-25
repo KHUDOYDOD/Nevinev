@@ -26,91 +26,33 @@ import { useEffect } from "react";
 import '@/lib/i18n';
 
 function Router() {
-  const { user, isLoading } = useAuth();
-  const [location, setLocation] = useLocation();
-
-  // Redirect authenticated users away from auth pages
-  useEffect(() => {
-    if (!isLoading && user && (location === "/login" || location === "/register")) {
-      setLocation("/dashboard");
-    }
-  }, [user, isLoading, location, setLocation]);
-
-  // Public routes
-  if (!user && !isLoading) {
-    return (
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/login" component={Login} />
-        <Route path="/register" component={Register} />
-        <Route path="/dashboard">
-          <Redirect to="/login" />
-        </Route>
-        <Route path="/admin">
-          <Redirect to="/login" />
-        </Route>
-        <Route component={NotFound} />
-      </Switch>
-    );
-  }
-
-  // User authenticated routes
-  if (user && user.role === "user") {
-    return (
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/dashboard" component={DashboardIndex} />
-        <Route path="/dashboard/deposits" component={DashboardDeposits} />
-        <Route path="/dashboard/transactions" component={DashboardTransactions} />
-        <Route path="/dashboard/calculator" component={DashboardCalculator} />
-        <Route path="/dashboard/referral" component={DashboardReferral} />
-        <Route path="/dashboard/settings" component={DashboardSettings} />
-        <Route path="/admin">
-          <Redirect to="/dashboard" />
-        </Route>
-        <Route component={NotFound} />
-      </Switch>
-    );
-  }
-
-  // Admin authenticated routes
-  if (user && user.role === "admin") {
-    return (
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/dashboard" component={DashboardIndex} />
-        <Route path="/dashboard/deposits" component={DashboardDeposits} />
-        <Route path="/dashboard/transactions" component={DashboardTransactions} />
-        <Route path="/dashboard/calculator" component={DashboardCalculator} />
-        <Route path="/dashboard/referral" component={DashboardReferral} />
-        <Route path="/dashboard/settings" component={DashboardSettings} />
-        <Route path="/admin" component={AdminIndex} />
-        <Route path="/admin/users" component={AdminUsers} />
-        <Route path="/admin/deposits" component={AdminDeposits} />
-        <Route path="/admin/withdrawals" component={AdminWithdrawals} />
-        <Route path="/admin/tariffs" component={AdminTariffs} />
-        <Route path="/admin/content" component={AdminContent} />
-        <Route component={NotFound} />
-      </Switch>
-    );
-  }
-
-  // Loading state
-  return <div className="flex h-screen w-full items-center justify-center">Loading...</div>;
+  // Temporarily simplify routing for troubleshooting
+  return (
+    <Switch>
+      <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      <Route component={NotFound} />
+    </Switch>
+  );
 }
 
-import { AuthProvider } from "@/contexts/AuthContext";
+// Импортируем все необходимые провайдеры
+import { AuthProvider } from "@/hooks/use-auth";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </ThemeProvider>
+        </LanguageProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

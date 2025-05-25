@@ -782,7 +782,7 @@ export default function UserDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center">
-                    {t('dashboard.personalAccount')}
+                    Личный кабинет
                     <motion.div
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -790,7 +790,7 @@ export default function UserDashboard() {
                       className="ml-3"
                     >
                       <span className="inline-block px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-medium rounded-full">
-                        BETA
+                        БЕТА
                       </span>
                     </motion.div>
                   </h1>

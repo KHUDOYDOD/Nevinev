@@ -516,21 +516,7 @@ export default {
     mainPageSubtitle: 'Подзаголовок главной страницы',
     statData: 'Статистика',
     withdrawalRequests: 'Заявки на вывод',
-    waiting: 'Ожидание',
-    id: 'ID',
-    total: 'Всего',
-    for24Hours: 'за 24 часа',
-    userMode: 'Режим пользователя',
-    overviewStats: 'Обзор статистики платформы',
-    activeUsers: 'Активные пользователи',
-    ofAllUsers: 'от всех пользователей',
-    avgDeposit: 'Средний депозит',
-    perUser: 'на пользователя',
-    retention: 'Удержание',
-    lastMonth: 'за последний месяц',
-    recentlyRegistered: 'Недавно зарегистрированные пользователи',
-    pendingApproval: 'Ожидающие подтверждения заявки',
-    activeTariffs: 'Активные тарифные планы'
+    waiting: 'В ожидании'
   },
 
   deposit: {

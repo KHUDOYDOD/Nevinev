@@ -114,15 +114,15 @@ const UserBalanceCard = ({ user }) => {
       setWithdrawAmount("");
       setWithdrawAddress("");
       toast({
-        title: t('success'),
-        description: t('withdraw.success'),
+        title: "Успешно",
+        description: "Заявка на вывод средств успешно создана",
         variant: "default"
       });
     },
     onError: () => {
       toast({
-        title: t('error'),
-        description: t('withdraw.error'),
+        title: "Ошибка",
+        description: "Не удалось выполнить вывод средств. Пожалуйста, попробуйте позже",
         variant: "destructive"
       });
     }

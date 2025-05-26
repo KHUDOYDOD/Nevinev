@@ -125,3 +125,125 @@
 - `@types/connect-pg-simple`
 - `@types/jsonwebtoken`
 - `@types/ws`
+# Используемые библиотеки и зависимости
+
+## Frontend (React/TypeScript)
+
+### Основные зависимости
+- **react** (^18.2.0) - Библиотека для создания пользовательских интерфейсов
+- **react-dom** (^18.2.0) - DOM-специфичные методы для React
+- **react-router-dom** (^6.8.1) - Маршрутизация для React приложений
+- **typescript** (^4.9.5) - Статическая типизация для JavaScript
+
+### UI и стили
+- **@tailwindcss/forms** (^0.5.3) - Стили форм для Tailwind CSS
+- **tailwindcss** (^3.2.7) - CSS фреймворк
+- **@radix-ui/react-*** - Набор доступных UI компонентов
+  - react-accordion (^1.1.2)
+  - react-alert-dialog (^1.0.5)
+  - react-avatar (^1.0.4)
+  - react-checkbox (^1.0.4)
+  - react-dialog (^1.0.5)
+  - react-dropdown-menu (^2.0.6)
+  - react-hover-card (^1.0.7)
+  - react-label (^2.0.2)
+  - react-menubar (^1.0.4)
+  - react-navigation-menu (^1.1.4)
+  - react-popover (^1.0.7)
+  - react-progress (^1.0.3)
+  - react-radio-group (^1.1.3)
+  - react-scroll-area (^1.0.5)
+  - react-select (^2.0.0)
+  - react-separator (^1.0.3)
+  - react-slider (^1.1.2)
+  - react-switch (^1.0.3)
+  - react-tabs (^1.0.4)
+  - react-toast (^1.1.5)
+  - react-toggle (^1.0.3)
+  - react-toggle-group (^1.0.4)
+  - react-tooltip (^1.0.7)
+
+### Интернационализация
+- **react-i18next** (^12.2.0) - Интернационализация для React
+- **i18next** (^22.4.13) - Фреймворк для интернационализации
+
+### Иконки и изображения
+- **lucide-react** (^0.321.0) - Набор иконок для React
+- **@heroicons/react** (^2.0.16) - Иконки от команды Heroicons
+
+### Формы и валидация
+- **react-hook-form** (^7.43.5) - Библиотека для работы с формами
+- **@hookform/resolvers** (^2.9.11) - Резолверы для валидации форм
+- **zod** (^3.20.6) - Схема валидации TypeScript-first
+
+### Состояние и запросы
+- **@tanstack/react-query** (^4.28.0) - Управление серверным состоянием
+- **zustand** (^4.3.6) - Управление состоянием приложения
+
+### Анимации
+- **framer-motion** (^10.0.1) - Библиотека анимаций для React
+
+### Утилиты
+- **clsx** (^1.2.1) - Утилита для условных CSS классов
+- **class-variance-authority** (^0.4.0) - Создание вариантов CSS классов
+- **tailwind-merge** (^1.10.0) - Слияние Tailwind CSS классов
+- **date-fns** (^2.29.3) - Современная JavaScript библиотека для работы с датами
+
+## Backend (Node.js/Express)
+
+### Основные зависимости
+- **express** (^4.18.2) - Веб-фреймворк для Node.js
+- **cors** (^2.8.5) - Middleware для настройки CORS
+- **helmet** (^6.0.1) - Защита Express приложений
+- **morgan** (^1.10.0) - HTTP логгер middleware
+
+### База данных
+- **drizzle-orm** (^0.29.0) - TypeScript ORM для SQL баз данных
+- **better-sqlite3** (^8.11.0) - Быстрый SQLite3 драйвер для Node.js
+
+### Валидация и безопасность
+- **zod** (^3.20.6) - Схема валидации TypeScript-first
+- **bcryptjs** (^2.4.3) - Хеширование паролей
+- **jsonwebtoken** (^9.0.0) - JSON Web Token реализация
+
+### Утилиты
+- **dotenv** (^16.0.3) - Загрузка переменных окружения из .env файла
+- **uuid** (^9.0.0) - Генерация UUID
+
+## Инструменты разработки
+
+### Сборка и разработка
+- **vite** (^4.1.4) - Быстрый инструмент сборки
+- **@vitejs/plugin-react** (^3.1.0) - Vite плагин для React
+- **tsx** (^3.12.3) - TypeScript исполнитель для Node.js
+
+### TypeScript
+- **@types/node** (^18.14.6) - TypeScript типы для Node.js
+- **@types/react** (^18.0.28) - TypeScript типы для React
+- **@types/react-dom** (^18.0.11) - TypeScript типы для React DOM
+- **@types/express** (^4.17.17) - TypeScript типы для Express
+- **@types/cors** (^2.8.13) - TypeScript типы для CORS
+- **@types/bcryptjs** (^2.4.2) - TypeScript типы для bcryptjs
+- **@types/jsonwebtoken** (^9.0.1) - TypeScript типы для jsonwebtoken
+- **@types/uuid** (^9.0.1) - TypeScript типы для uuid
+
+### Линтинг и форматирование
+- **eslint** (^8.35.0) - Линтер для JavaScript/TypeScript
+- **@typescript-eslint/eslint-plugin** (^5.54.0) - ESLint плагин для TypeScript
+- **@typescript-eslint/parser** (^5.54.0) - ESLint парсер для TypeScript
+- **eslint-plugin-react-hooks** (^4.6.0) - ESLint правила для React Hooks
+- **eslint-plugin-react-refresh** (^0.3.4) - ESLint плагин для React Refresh
+
+### CSS и PostCSS
+- **postcss** (^8.4.21) - Инструмент для трансформации CSS
+- **autoprefixer** (^10.4.13) - PostCSS плагин для автопрефиксов
+
+## Скрипты package.json
+
+- **dev** - Запуск в режиме разработки
+- **build** - Сборка для продакшена
+- **start** - Запуск продакшен сервера
+- **preview** - Предварительный просмотр сборки
+- **lint** - Проверка кода линтером
+
+Все библиотеки выбраны для обеспечения современной, безопасной и высокопроизводительной разработки веб-приложения с поддержкой интернационализации и адаптивного дизайна.

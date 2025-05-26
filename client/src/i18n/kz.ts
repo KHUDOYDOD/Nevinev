@@ -53,20 +53,20 @@ export default {
     premium: 'Премиум',
     elite: 'Элит'
   },
-  
+
   hero: {
     title: 'Ақылды инвестиция. 24 сағат ішінде пайда табыңыз.',
     subtitle: 'Күніне 15% дейін табыс',
     button: 'Инвестициялауды бастау',
     learnMore: 'Көбірек білу'
   },
-  
+
   stats: {
     invested: 'Инвестицияланған',
     paid: 'Төленген',
     users: 'Пайдаланушылар'
   },
-  
+
   calculator: {
     title: 'Пайдаңызды есептеңіз',
     description: 'TRADEPO платформасында инвестицияларыңыздан әлеуетті табысты білу үшін біздің калькуляторды пайдаланыңыз.',
@@ -79,7 +79,7 @@ export default {
     totalAmount: 'Қорытынды сома',
     investNow: 'Қазір инвестициялау'
   },
-  
+
   howItWorks: {
     title: 'Қалай жұмыс істейді',
     description: 'TRADEPO платформасында инвестициялау және пайда табу процесі қарапайым.',
@@ -100,7 +100,7 @@ export default {
       description: 'Күн сайын капиталыңыздың өсуін бақылаңыз және қаражатты кез келген уақытта шығарыңыз.'
     }
   },
-  
+
   tariffs: {
     title: 'Тарифіңізді таңдаңыз',
     description: 'Қаржылық мақсаттарыңызға жету үшін әртүрлі инвестициялық жоспарларды ұсынамыз.',
@@ -148,7 +148,7 @@ export default {
       button: 'Тарифті таңдау'
     }
   },
-  
+
   activity: {
     title: 'Платформа белсенділігі',
     description: 'Платформамыздың нақты уақыттағы өсуін бақылаңыз.',
@@ -159,7 +159,7 @@ export default {
     profit: 'Пайда',
     minutesAgo: 'минут бұрын'
   },
-  
+
   advantages: {
     title: 'Платформаның артықшылықтары',
     description: 'Неліктен мыңдаған инвесторлар өз инвестициялары үшін TRADEPO-ны таңдайды.',
@@ -180,14 +180,14 @@ export default {
       description: 'Кез келген уақытта көмек көрсетуге дайын кәсіби қолдау командасы.'
     }
   },
-  
+
   testimonials: {
     title: 'Инвестор пікірлері',
     description: 'Біздің пайдаланушылардың TRADEPO туралы не айтатынын біліңіз.',
     investor: 'Инвестор бастап',
     year: 'жыл'
   },
-  
+
   contact: {
     title: 'Сұрақтарыңыз бар ма?',
     description: 'Біздің қолдау командасы әрқашан сізге көмектесуге және кез-келген сұрақтарға жауап беруге дайын.',
@@ -202,7 +202,7 @@ export default {
       button: 'Электрондық поштаға жазу'
     }
   },
-  
+
   footer: {
     description: 'Жоғары күнделікті табыстылығы бар ақылды инвестиция платформасы.',
     navigation: 'Навигация',
@@ -213,7 +213,7 @@ export default {
     copyright: '© 2023 TRADEPO.RU. Барлық құқықтар қорғалған.',
     contactInfo: 'Байланыс ақпараты'
   },
-  
+
   login: {
     title: 'Жүйеге кіру',
     subtitle: 'Тіркелгіңізге кіріңіз немесе жаңасын жасаңыз',
@@ -225,7 +225,7 @@ export default {
     emailPlaceholder: 'Электрондық поштаңызды енгізіңіз',
     passwordPlaceholder: 'Құпия сөзіңізді енгізіңіз'
   },
-  
+
   register: {
     title: 'Тіркелу',
     subtitle: 'Жаңа тіркелгі жасаңыз',
@@ -243,7 +243,7 @@ export default {
     confirmPasswordPlaceholder: 'Құпия сөзді қайталаңыз',
     referralCodePlaceholder: 'Реферал кодын енгізіңіз'
   },
-  
+
   dashboard: {
     overview: 'Тіркелгі шолуы',
     balance: 'Баланс',
@@ -266,12 +266,11 @@ export default {
     referralProgramDescription: 'Достарыңызды шақырыңыз және олардың инвестицияларынан 0.1% алыңыз.',
     yourReferralLink: 'Сіздің реферал сілтемеңіз:',
     copy: 'Көшіру',
-    referrals: 'Рефералдар',
     active: 'Белсенді',
     earned: 'Табыс',
     detailedStatistics: 'Егжей-тегжейлі статистика'
   },
-  
+
   admin: {
     dashboard: 'Басқару панелі',
     users: 'Пайдаланушылар',
@@ -297,7 +296,6 @@ export default {
     contentManagement: 'Мазмұнды басқару',
     mainPageTitle: 'Басты бет тақырыбы',
     mainPageSubtitle: 'Басты бет ішкі тақырыбы',
-    statistics: 'Статистика',
     withdrawalRequests: 'Шығаруға өтінімдер',
     waiting: 'Күту',
     id: 'ID',
@@ -305,7 +303,7 @@ export default {
     for24Hours: '24 сағат ішінде',
     userMode: 'Пайдаланушы режимі'
   },
-  
+
   deposit: {
     title: 'Балансты толтыру',
     description: 'Төлем әдісі мен сомасын таңдаңыз',
@@ -319,7 +317,7 @@ export default {
     minimumAmount: 'Толтырудың минималды сомасы:',
     currency: '$'
   },
-  
+
   withdraw: {
     title: 'Қаражатты шығару',
     description: 'Шығару әдісі мен сомасын таңдаңыз',
@@ -335,14 +333,14 @@ export default {
     withdrawalFee: 'Шығару комиссиясы:',
     currency: '$'
   },
-  
+
   transactionTypes: {
     deposit: 'Толтыру',
     withdrawal: 'Шығару',
     profit: 'Есептеу',
     referral: 'Реферал бонусы'
   },
-  
+
   transactionStatuses: {
     pending: 'Күту',
     completed: 'Аяқталды',

@@ -53,20 +53,20 @@ export default {
     premium: 'Premium',
     elite: 'Elite'
   },
-  
+
   hero: {
     title: 'Invest smart. Get profit in 24 hours.',
     subtitle: 'Up to 15% income per day',
     button: 'Start investing',
     learnMore: 'Learn more'
   },
-  
+
   stats: {
     invested: 'Invested',
     paid: 'Paid out',
     users: 'Users'
   },
-  
+
   calculator: {
     title: 'Calculate your profit',
     description: 'Use our calculator to find out the potential income from your investments on the TRADEPO platform.',
@@ -79,7 +79,7 @@ export default {
     totalAmount: 'Final amount',
     investNow: 'Invest now'
   },
-  
+
   howItWorks: {
     title: 'How it works',
     description: 'Simple process of investing and receiving profits on the TRADEPO platform.',
@@ -100,7 +100,7 @@ export default {
       description: 'Watch your capital grow daily and withdraw funds at any time.'
     }
   },
-  
+
   tariffs: {
     title: 'Choose your plan',
     description: 'We offer various investment plans to achieve your financial goals.',
@@ -148,7 +148,7 @@ export default {
       button: 'Select plan'
     }
   },
-  
+
   activity: {
     title: 'Platform activity',
     description: 'Watch our platform grow in real-time.',
@@ -159,7 +159,7 @@ export default {
     profit: 'Profit',
     minutesAgo: 'minutes ago'
   },
-  
+
   advantages: {
     title: 'Platform advantages',
     description: 'Why thousands of investors choose TRADEPO for their investments.',
@@ -180,14 +180,14 @@ export default {
       description: 'Professional support team ready to help at any time.'
     }
   },
-  
+
   testimonials: {
     title: 'Investor reviews',
     description: 'Find out what our users say about TRADEPO.',
     investor: 'Investor since',
     year: ''
   },
-  
+
   contact: {
     title: 'Have questions?',
     description: 'Our support team is always ready to help you and answer any questions.',
@@ -202,7 +202,7 @@ export default {
       button: 'Write to Email'
     }
   },
-  
+
   footer: {
     description: 'Platform for smart investments with high daily returns.',
     navigation: 'Navigation',
@@ -213,7 +213,7 @@ export default {
     copyright: '© 2023 TRADEPO.RU. All rights reserved.',
     contactInfo: 'Contact information'
   },
-  
+
   login: {
     title: 'Login',
     subtitle: 'Log in to your account or create a new one',
@@ -225,7 +225,7 @@ export default {
     emailPlaceholder: 'Enter your email',
     passwordPlaceholder: 'Enter your password'
   },
-  
+
   register: {
     title: 'Registration',
     subtitle: 'Create a new account',
@@ -243,7 +243,7 @@ export default {
     confirmPasswordPlaceholder: 'Repeat password',
     referralCodePlaceholder: 'Enter referral code'
   },
-  
+
   dashboard: {
     overview: 'Account overview',
     balance: 'Balance',
@@ -266,12 +266,11 @@ export default {
     referralProgramDescription: 'Invite friends and get 0.1% of their investments.',
     yourReferralLink: 'Your referral link:',
     copy: 'Copy',
-    referrals: 'Referrals',
-    active: 'Active',
-    earned: 'Earned',
+      active: 'Active',
+      earned: 'Earned',
     detailedStatistics: 'Detailed statistics'
   },
-  
+
   admin: {
     dashboard: 'Dashboard',
     users: 'Users',
@@ -296,16 +295,15 @@ export default {
     isActive: 'Active',
     contentManagement: 'Content management',
     mainPageTitle: 'Main page title',
-    mainPageSubtitle: 'Main page subtitle',
-    statistics: 'Statistics',
-    withdrawalRequests: 'Withdrawal requests',
-    waiting: 'Waiting',
+      mainPageSubtitle: 'Main page subtitle',
+      withdrawalRequests: 'Withdrawal requests',
+      waiting: 'Waiting',
     id: 'ID',
     total: 'Total',
     for24Hours: 'for 24 hours',
     userMode: 'User mode'
   },
-  
+
   deposit: {
     title: 'Fund your balance',
     description: 'Choose payment method and amount',
@@ -319,7 +317,7 @@ export default {
     minimumAmount: 'Minimum deposit amount:',
     currency: '$'
   },
-  
+
   withdraw: {
     title: 'Withdraw funds',
     description: 'Choose withdrawal method and amount',
@@ -335,14 +333,14 @@ export default {
     withdrawalFee: 'Withdrawal fee:',
     currency: '$'
   },
-  
+
   transactionTypes: {
     deposit: 'Deposit',
     withdrawal: 'Withdrawal',
     profit: 'Profit',
     referral: 'Referral bonus'
   },
-  
+
   transactionStatuses: {
     pending: 'Pending',
     completed: 'Completed',

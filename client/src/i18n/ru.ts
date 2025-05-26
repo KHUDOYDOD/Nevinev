@@ -488,8 +488,8 @@ export default {
       title: 'Пополнение счета',
       amount: 'Сумма пополнения',
       selectTariff: 'Выберите тариф',
-      minAmount: 'Минимальная сумма:',
-    },
+      minAmount: 'Минимальная сумма:'
+    }
   },
 
   admin: {

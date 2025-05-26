@@ -53,20 +53,20 @@ export default {
     premium: 'Пешрафта',
     elite: 'Элита'
   },
-  
+
   hero: {
     title: 'Сармоягузории оқилона. Дар 24 соат фоида гиред.',
     subtitle: 'То 15% даромад дар як рӯз',
     button: 'Сармоягузориро оғоз кунед',
     learnMore: 'Бештар омӯзед'
   },
-  
+
   stats: {
     invested: 'Сармоягузорӣ шудааст',
     paid: 'Пардохт шудааст',
     users: 'Истифодабарандагон'
   },
-  
+
   calculator: {
     title: 'Фоидаи худро ҳисоб кунед',
     description: 'Барои дарёфти даромади эҳтимолӣ аз сармоягузории худ дар платформаи TRADEPO, ҳисобкунаки моро истифода баред.',
@@ -79,7 +79,7 @@ export default {
     totalAmount: 'Маблағи ниҳоӣ',
     investNow: 'Ҳоло сармоягузорӣ кунед'
   },
-  
+
   howItWorks: {
     title: 'Чӣ тавр кор мекунад',
     description: 'Раванди осони сармоягузорӣ ва гирифтани фоида дар платформаи TRADEPO.',
@@ -100,7 +100,7 @@ export default {
       description: 'Ҳар рӯз афзоиши сармояи худро мушоҳида кунед ва маблағро дар ҳар вақт гиред.'
     }
   },
-  
+
   tariffs: {
     title: 'Тарифи худро интихоб кунед',
     description: 'Мо нақшаҳои гуногуни сармоягузориро барои ноил шудан ба ҳадафҳои молиявии шумо пешниҳод мекунем.',
@@ -148,7 +148,7 @@ export default {
       button: 'Тарифро интихоб кунед'
     }
   },
-  
+
   activity: {
     title: 'Фаъолияти платформа',
     description: 'Рушди платформаи моро дар вақти воқеӣ мушоҳида кунед.',
@@ -159,7 +159,7 @@ export default {
     profit: 'Фоида',
     minutesAgo: 'дақиқа пеш'
   },
-  
+
   advantages: {
     title: 'Бартариҳои платформа',
     description: 'Чаро ҳазорон сармоягузорон TRADEPO-ро барои сармоягузории худ интихоб мекунанд.',
@@ -180,14 +180,14 @@ export default {
       description: 'Гурӯҳи дастгирии касбӣ, ки ҳамеша тайёр аст ба шумо кӯмак кунад.'
     }
   },
-  
+
   testimonials: {
     title: 'Тақризҳои сармоягузорон',
     description: 'Фаҳмед, ки истифодабарандагони мо дар бораи TRADEPO чӣ мегӯянд.',
     investor: 'Сармоягузор аз',
     year: 'сол'
   },
-  
+
   contact: {
     title: 'Саволҳо доред?',
     description: 'Дастаи дастгирии мо ҳамеша тайёр аст ба шумо кӯмак кунад ва ба ҳама гуна саволҳо ҷавоб диҳад.',
@@ -202,7 +202,7 @@ export default {
       button: 'Ба почтаи электронӣ нависед'
     }
   },
-  
+
   footer: {
     description: 'Платформа барои сармоягузории оқилона бо даромади баланди рӯзона.',
     navigation: 'Навигатсия',
@@ -213,7 +213,7 @@ export default {
     copyright: '© 2023 TRADEPO.RU. Ҳамаи ҳуқуқҳо ҳифз шудаанд.',
     contactInfo: 'Маълумоти тамос'
   },
-  
+
   login: {
     title: 'Воридшавӣ ба система',
     subtitle: 'Ба ҳисоби худ ворид шавед ё нав созед',
@@ -225,7 +225,7 @@ export default {
     emailPlaceholder: 'Почтаи электронии худро ворид кунед',
     passwordPlaceholder: 'Рамзи худро ворид кунед'
   },
-  
+
   register: {
     title: 'Бақайдгирӣ',
     subtitle: 'Ҳисоби нав созед',
@@ -243,7 +243,7 @@ export default {
     confirmPasswordPlaceholder: 'Рамзро такрор кунед',
     referralCodePlaceholder: 'Рамзи муаррифиро ворид кунед'
   },
-  
+
   dashboard: {
     overview: 'Шарҳи ҳисоб',
     balance: 'Тавозун',
@@ -266,12 +266,11 @@ export default {
     referralProgramDescription: 'Дӯстонро даъват кунед ва 0.1% аз сармоягузории онҳо гиред.',
     yourReferralLink: 'Пайванди муаррифии шумо:',
     copy: 'Нусхабардорӣ',
-    referrals: 'Муаррифиҳо',
     active: 'Фаъол',
     earned: 'Даромад',
     detailedStatistics: 'Омори муфассал'
   },
-  
+
   admin: {
     dashboard: 'Панели идоракунӣ',
     users: 'Истифодабарандагон',
@@ -297,7 +296,6 @@ export default {
     contentManagement: 'Идоракунии мундариҷа',
     mainPageTitle: 'Сарлавҳаи саҳифаи асосӣ',
     mainPageSubtitle: 'Зерсарлавҳаи саҳифаи асосӣ',
-    statistics: 'Омор',
     withdrawalRequests: 'Дархостҳои гирифтан',
     waiting: 'Интизорӣ',
     id: 'ID',
@@ -305,7 +303,7 @@ export default {
     for24Hours: 'барои 24 соат',
     userMode: 'Ҳолати истифодабаранда'
   },
-  
+
   deposit: {
     title: 'Пур кардани тавозун',
     description: 'Усули пардохт ва маблағро интихоб кунед',
@@ -319,7 +317,7 @@ export default {
     minimumAmount: 'Маблағи ҳадди ақали пур кардан:',
     currency: '$'
   },
-  
+
   withdraw: {
     title: 'Гирифтани маблағ',
     description: 'Усули гирифтан ва маблағро интихоб кунед',
@@ -335,14 +333,14 @@ export default {
     withdrawalFee: 'Хароҷоти гирифтан:',
     currency: '$'
   },
-  
+
   transactionTypes: {
     deposit: 'Пур кардан',
     withdrawal: 'Гирифтан',
     profit: 'Ҳисобкунӣ',
     referral: 'Бонуси муаррифӣ'
   },
-  
+
   transactionStatuses: {
     pending: 'Интизорӣ',
     completed: 'Иҷро шуд',

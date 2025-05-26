@@ -266,8 +266,8 @@ export default {
     referralProgramDescription: 'Invite friends and get 0.1% of their investments.',
     yourReferralLink: 'Your referral link:',
     copy: 'Copy',
-      active: 'Active',
-      earned: 'Earned',
+    active: 'Active',
+    earned: 'Earned',
     detailedStatistics: 'Detailed statistics'
   },
 
@@ -295,9 +295,9 @@ export default {
     isActive: 'Active',
     contentManagement: 'Content management',
     mainPageTitle: 'Main page title',
-      mainPageSubtitle: 'Main page subtitle',
-      withdrawalRequests: 'Withdrawal requests',
-      waiting: 'Waiting',
+    mainPageSubtitle: 'Main page subtitle',
+    withdrawalRequests: 'Withdrawal requests',
+    waiting: 'Waiting',
     id: 'ID',
     total: 'Total',
     for24Hours: 'for 24 hours',

@@ -11,4 +11,10 @@ services:
         value: production
       - key: PORT
         value: 5000
+      - key: DATABASE_URL
+        sync: false  # Будет настроено в Render Dashboard
+      - key: SESSION_SECRET
+        generateValue: true  # Render автоматически сгенерирует
+      - key: JWT_SECRET
+        generateValue: true  # Render автоматически сгенерирует
     healthCheckPath: /
